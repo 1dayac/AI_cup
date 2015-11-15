@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="CPP_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/MyStrategy.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/MyStrategy.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/RemoteProcessClient.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/RemoteProcessClient.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Runner.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Runner.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Strategy.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Strategy.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/csimplesocket/ActiveSocket.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/csimplesocket/ActiveSocket.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/csimplesocket/HTTPActiveSocket.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/csimplesocket/HTTPActiveSocket.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/csimplesocket/PassiveSocket.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/csimplesocket/PassiveSocket.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/csimplesocket/SimpleSocket.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/csimplesocket/SimpleSocket.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Bonus.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Bonus.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Car.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Car.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/CircularUnit.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/CircularUnit.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Game.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Game.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Move.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Move.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/OilSlick.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/OilSlick.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Player.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Player.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/PlayerContext.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/PlayerContext.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Projectile.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Projectile.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/RectangularUnit.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/RectangularUnit.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Unit.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/Unit.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/World.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/model/World.h" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="Header Search Paths">
+        <CLASSES>
+          <root url="file:///usr/include" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" />
+          <root url="file:///usr/local/include" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file:///usr/include" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include" />
+          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" />
+          <root url="file:///usr/local/include" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+  </component>
+</module>
