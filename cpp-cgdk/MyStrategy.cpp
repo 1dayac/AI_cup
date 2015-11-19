@@ -10,6 +10,32 @@
 using namespace model;
 using namespace std;
 
+struct Point {
+
+    Point(int x, int y)
+    : x_(x), y_(y) {
+
+    };
+    int x_;
+    int y_;
+};
+
+
+Point CurrentTile(double x, double y) {
+    return Point(x/800, y/800);
+}
+
+Point CurrentTile(const Car& self) {
+    return CurrentTile(self.getX(), self.getY());
+}
+
+vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
+    auto space = world.getTilesXY();
+    Point startPoint = CurrentTile(self);
+    Direction startDirection = world.getStartingDirection();
+    
+}
+
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
     int xCoord = self.getNextWaypointX()  * game.getTrackTileSize() + 0.5 * game.getTrackTileSize();
     int yCoord = self.getNextWaypointY() * game.getTrackTileSize() + 0.5 * game.getTrackTileSize();
