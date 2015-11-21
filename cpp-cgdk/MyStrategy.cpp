@@ -6,8 +6,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
-#include <unordered_set>
-#include <unordered_map>
+#include <set>
+#include <map>
 
 using namespace model;
 using namespace std;
@@ -18,10 +18,20 @@ struct Point {
     : x_(x), y_(y) {
 
     };
+
+    bool operator==(const Point &other) const {
+        return x_ == other.x_ && y_ == other.y_;
+    }
+
+    bool operator<(const Point &other) const {
+        return y_ < other.y_ or (y_ == other.y_ and x_ < other.x_);
+    }
+
     int x_;
     int y_;
 };
 
+typedef pair<Point, Point> Edge;
 
 bool HasHoleTop(TileType tyle) {
     return tyle == VERTICAL || tyle == LEFT_BOTTOM_CORNER || tyle == RIGHT_BOTTOM_CORNER ||
@@ -47,11 +57,34 @@ bool HasHoleRight(TileType tyle) {
 
 }
 
+bool Adjacent(Edge e1, Edge e2) {
+    if(e1.second == e2.first) {
+        return true;
+    }
+    return false;
+}
 
-void ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
-    typedef pair<Point, Point> Edge;
-    unordered_set<Edge> edge_graph_vertices;
-    unordered_map<pair<Edge, Edge>, int> edge_graph_edges;
+bool IsStraightLine(Edge e1, Edge e2) {
+    return (abs(e1.first.x_ - e2.second.x_) == 0 and abs(e1.first.y_ - e2.second.y_) == 2) ||
+           (abs(e1.first.x_ - e2.second.x_) == 2 and abs(e1.first.y_ - e2.second.y_) == 0);
+}
+
+
+bool IsTurn(Edge e1, Edge e2) {
+    return !IsStraightLine(e1, e2);
+}
+
+struct EdgeBasedGraph {
+    set<Edge> edge_graph_vertices_;
+    map<pair<Edge, Edge>, int> edge_graph_edges_;
+    EdgeBasedGraph(set<Edge>& edge_graph_vertices, map<pair<Edge, Edge>, int>& edge_graph_edges)
+    : edge_graph_vertices_(edge_graph_vertices), edge_graph_edges_(edge_graph_edges)
+    {  }
+};
+
+EdgeBasedGraph ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
+    set<Edge> edge_graph_vertices;
+    map<pair<Edge, Edge>, int> edge_graph_edges;
     for(size_t i = 0; i < my_world.size(); ++i) {
        for(size_t j = 0; i < my_world.size(); ++i) {
             if(HasHoleBottom(my_world[i][j])) {
@@ -73,8 +106,20 @@ void ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
    }
 
     for(auto e : edge_graph_vertices) {
+        for(auto e2 : edge_graph_vertices) {
+            if(Adjacent(e, e2)) {
+                if(IsTurn(e, e2)) {
+                    edge_graph_edges[make_pair(e,e2)] = 3;
+                }
 
+                if(IsStraightLine(e, e2)) {
+                    edge_graph_edges[make_pair(e,e2)] = 1;
+                }
+            }
+        }
     }
+
+    return EdgeBasedGraph(edge_graph_vertices, edge_graph_edges);
 }
 
 
@@ -90,7 +135,7 @@ vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
     auto space = world.getTilesXY();
     Point startPoint = CurrentTile(self);
     Direction startDirection = world.getStartingDirection();
-    
+    auto graph = ConvertToEdgeBasedGraph(space);
 }
 
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
@@ -98,6 +143,7 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     int yCoord = self.getNextWaypointY() * game.getTrackTileSize() + 0.5 * game.getTrackTileSize();
     double angle = self.getAngleTo(xCoord, yCoord);
     double angleCar = self.getAngle();
+    bestPath(self, world, game);
     cout << xCoord << " " << yCoord << " " << angle << " " << angleCar << endl;
     if(angleCar > angle) {
         move.setWheelTurn(-0.8);
