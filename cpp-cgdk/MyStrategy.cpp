@@ -6,6 +6,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <unordered_set>
+#include <unordered_map>
 
 using namespace model;
 using namespace std;
@@ -19,6 +21,61 @@ struct Point {
     int x_;
     int y_;
 };
+
+
+bool HasHoleTop(TileType tyle) {
+    return tyle == VERTICAL || tyle == LEFT_BOTTOM_CORNER || tyle == RIGHT_BOTTOM_CORNER ||
+    tyle == LEFT_HEADED_T || tyle == RIGHT_HEADED_T || tyle == TOP_HEADED_T || tyle == CROSSROADS;
+
+}
+
+bool HasHoleBottom(TileType tyle) {
+    return tyle == VERTICAL || tyle == LEFT_TOP_CORNER || tyle == RIGHT_TOP_CORNER ||
+           tyle == LEFT_HEADED_T || tyle == RIGHT_HEADED_T || tyle == BOTTOM_HEADED_T || tyle == CROSSROADS;
+
+}
+
+bool HasHoleLeft(TileType tyle) {
+    return tyle == HORIZONTAL || tyle == RIGHT_BOTTOM_CORNER || tyle == RIGHT_TOP_CORNER ||
+           tyle == LEFT_HEADED_T || tyle == TOP_HEADED_T || tyle == BOTTOM_HEADED_T || tyle == CROSSROADS;
+
+}
+
+bool HasHoleRight(TileType tyle) {
+    return tyle == HORIZONTAL || tyle == LEFT_BOTTOM_CORNER || tyle == LEFT_TOP_CORNER ||
+           tyle == RIGHT_HEADED_T || tyle == TOP_HEADED_T || tyle == BOTTOM_HEADED_T || tyle == CROSSROADS;
+
+}
+
+
+void ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
+    typedef pair<Point, Point> Edge;
+    unordered_set<Edge> edge_graph_vertices;
+    unordered_map<pair<Edge, Edge>, int> edge_graph_edges;
+    for(size_t i = 0; i < my_world.size(); ++i) {
+       for(size_t j = 0; i < my_world.size(); ++i) {
+            if(HasHoleBottom(my_world[i][j])) {
+                edge_graph_vertices.insert(Edge(Point(i, j), Point(i + 1, j)));
+            }
+           if(HasHoleTop(my_world[i][j])) {
+               edge_graph_vertices.insert(Edge(Point(i, j), Point(i - 1, j)));
+           }
+
+           if(HasHoleRight(my_world[i][j])) {
+               edge_graph_vertices.insert(Edge(Point(i, j), Point(i + 1, j)));
+           }
+
+           if(HasHoleLeft(my_world[i][j])) {
+               edge_graph_vertices.insert(Edge(Point(i, j), Point(i - 1, j)));
+           }
+
+       }
+   }
+
+    for(auto e : edge_graph_vertices) {
+
+    }
+}
 
 
 Point CurrentTile(double x, double y) {
