@@ -122,9 +122,34 @@ EdgeBasedGraph ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
     return EdgeBasedGraph(edge_graph_vertices, edge_graph_edges);
 }
 
-void AddStartAndEndNodes(EdgeBasedGraph& graph, Point startPoint, Direction direction) {
-    for(auto e : graph.edge_graph_vertices_) {
+void AddStartAndEndNodes(EdgeBasedGraph& graph, Point startPoint) {
+    vector<Edge> start_vertices;
+    vector<pair<Edge, Edge>> start_edges;
+    vector<Edge> end_vertices;
+    vector<pair<Edge, Edge>> end_edges;
 
+    for(auto e : graph.edge_graph_vertices_) {
+        start_vertices.push_back(Edge(make_pair(Point(-1,-1), e.first)));
+        end_vertices.push_back(Edge(make_pair(e.second, Point(-1,-1))));
+
+        start_edges.push_back(make_pair(Edge(make_pair(Point(-1,-1), e.first)),e));
+        end_edges.push_back(make_pair(e, Edge(make_pair(e.second, Point(-1,-1)))));
+    }
+
+    for(auto e : start_edges) {
+        graph.edge_graph_edges_[e] = 0;
+    }
+
+    for(auto e : end_edges) {
+        graph.edge_graph_edges_[e] = 0;
+    }
+
+    for(auto e : start_vertices) {
+        graph.edge_graph_vertices_.insert(e);
+    }
+
+    for(auto e : end_vertices) {
+        graph.edge_graph_vertices_.insert(e);
     }
 }
 
@@ -136,14 +161,16 @@ Point CurrentTile(const Car& self) {
     return CurrentTile(self.getX(), self.getY());
 }
 
-
+vector<Point> Dijkstra(EdgeBasedGraph& graph, Point startPoint, Direction direction) {
+    
+}
 
 vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
     auto space = world.getTilesXY();
     Point startPoint = CurrentTile(self);
     Direction startDirection = world.getStartingDirection();
     auto graph = ConvertToEdgeBasedGraph(space);
-    AddStartAndEndNodes(graph, startPoint, startDirection);
+    AddStartAndEndNodes(graph, startPoint);
 }
 
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
