@@ -313,9 +313,18 @@ vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
     return final_answer;
 }
 
+vector<Point> way;
+size_t curr_index = 0;
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
-    int xCoord = self.getNextWaypointX()  * game.getTrackTileSize() + 0.5 * game.getTrackTileSize();
-    int yCoord = self.getNextWaypointY() * game.getTrackTileSize() + 0.5 * game.getTrackTileSize();
+    if(way.size() == 0) {
+        way = bestPath(self, world, game);
+    }
+    Point current_tile = CurrentTile(self);
+    if(curr_index != way.size() and current_tile == way[curr_index]) {
+        curr_index++;
+    }
+    int xCoord = way[curr_index].x_ + 0.5 * game.getTrackTileSize();
+    int yCoord = way[curr_index].y_ + 0.5 * game.getTrackTileSize();
     double angle = self.getAngleTo(xCoord, yCoord);
     double angleCar = self.getAngle();
     bestPath(self, world, game);
