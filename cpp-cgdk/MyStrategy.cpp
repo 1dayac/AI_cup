@@ -122,6 +122,11 @@ EdgeBasedGraph ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
     return EdgeBasedGraph(edge_graph_vertices, edge_graph_edges);
 }
 
+void AddStartAndEndNodes(EdgeBasedGraph& graph, Point startPoint, Direction direction) {
+    for(auto e : graph.edge_graph_vertices_) {
+
+    }
+}
 
 Point CurrentTile(double x, double y) {
     return Point(x/800, y/800);
@@ -131,11 +136,14 @@ Point CurrentTile(const Car& self) {
     return CurrentTile(self.getX(), self.getY());
 }
 
+
+
 vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
     auto space = world.getTilesXY();
     Point startPoint = CurrentTile(self);
     Direction startDirection = world.getStartingDirection();
     auto graph = ConvertToEdgeBasedGraph(space);
+    AddStartAndEndNodes(graph, startPoint, startDirection);
 }
 
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
