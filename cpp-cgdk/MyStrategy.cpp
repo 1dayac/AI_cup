@@ -2,15 +2,6 @@
 
 #define PI 3.14159265358979323846
 #define _USE_MATH_DEFINES
-#include <algorithm>
-#include <cmath>
-#include <cstdlib>
-#include <iostream>
-#include <set>
-#include <map>
-#include <queue>
-using namespace model;
-using namespace std;
 
 struct Point {
 
@@ -175,15 +166,18 @@ Point CurrentTile(const Car& self) {
     return CurrentTile(self.getX(), self.getY());
 }
 
-vector<Point> PathFromPreds(map<Edge, Edge> preds, Point start, Point end) {
+vector<Point> PathFromPreds(map<Edge, Edge> preds, Point end, Point start) {
     vector<Point> answer;
 
-    auto tempStart = Edge(make_pair(start, Point(-1, -1)));
+    auto tempStart = Edge(make_pair(end, Point(-1, -1)));
 
     for(; tempStart.second != start; tempStart = preds[tempStart]) {
-        answer.push_back(tempStart.first);
+        if(tempStart.second != Point(-1, -1)) {
+            answer.push_back(tempStart.second);
+        }
     }
     reverse(answer.begin(), answer.end());
+    Print(answer);
     return answer;
 }
 
@@ -214,14 +208,11 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ - 1)))] = 3;
     }
 
-    cout << "Weights done" << endl;
     priority_queue<pair<int, Edge>> q;
     map<Edge, int> dist;
     for(auto e : graph.edge_graph_vertices_) {
         dist[e] = INFINITY;
     }
-
-    cout << "Distance done" << endl;
 
     map<Edge, Edge> pred;
     q.push(make_pair(0, make_pair(Point(-1,-1), startPoint)));
@@ -231,25 +222,19 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         q.pop();
         int weight = node.first;
         Edge target = node.second;
-        cout << "Sink : ";
-        target.first.Print();
-        cout << "Source : ";
-        target.second.Print();
+
 
         if(weight > dist[target]) {
             continue;
         }
 
         if(target.first == endPoint && target.second == Point(-1, -1)) {
-            cout << "Building path from preds" << endl;
-
             return PathFromPreds(pred, endPoint, startPoint);
         }
 
         //add all neighbours and end points
         Edge end = make_pair(target.second, Point(-1,-1));
         if(graph.edge_graph_vertices_.count(end) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, end)] < dist[end] ) {
-            cout << "Adding end" << endl;
             dist[end] = dist[target] + graph.edge_graph_edges_[make_pair(target, end)];
             pred[end] = target;
             q.push(make_pair(-dist[end], end));
@@ -258,7 +243,6 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge left = make_pair(target.second, Point(target.second.x_ - 1,target.second.y_));
 
         if(graph.edge_graph_vertices_.count(left) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, left)] < dist[left] ) {
-            cout << "Adding left" << endl;
             dist[left] = dist[target] + graph.edge_graph_edges_[make_pair(target, left)];
             pred[left] = target;
             q.push(make_pair(-dist[left], left));
@@ -267,7 +251,6 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge right = make_pair(target.second, Point(target.second.x_ + 1,target.second.y_));
 
         if(graph.edge_graph_vertices_.count(right) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, right)] < dist[right] ) {
-            cout << "Adding right" << endl;
             dist[right] = dist[target] + graph.edge_graph_edges_[make_pair(target, right)];
             pred[right] = target;
             q.push(make_pair(-dist[right], right));
@@ -276,7 +259,6 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge up = make_pair(target.second, Point(target.second.x_,target.second.y_ - 1));
 
         if(graph.edge_graph_vertices_.count(up) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, up)] < dist[up] ) {
-            cout << "Adding up" << endl;
             dist[up] = dist[target] + graph.edge_graph_edges_[make_pair(target, up)];
             pred[up] = target;
             q.push(make_pair(-dist[up], up));
@@ -285,7 +267,6 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge down = make_pair(target.second, Point(target.second.x_,target.second.y_ + 1));
 
         if(graph.edge_graph_vertices_.count(down) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, down)] < dist[down] ) {
-            cout << "Adding down" << endl;
             dist[down] = dist[target] + graph.edge_graph_edges_[make_pair(target, down)];
             pred[down] = target;
             q.push(make_pair(-dist[down], down));
@@ -330,7 +311,7 @@ vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
         Direction direction = i == 0 ? world.getStartingDirection() : GetDirection(final_answer[final_answer.size() - 2], final_answer[final_answer.size() - 1]);
         vector<Point> answer = Dijkstra(graph, from, to, direction);
         cout << "Dijkstra run completed" << endl;
-        Print(answer);
+        //Print(answer);
         for(auto elem : answer) {
             if(final_answer.size() != 0 && elem != final_answer.back()) {
                 final_answer.push_back(elem);
@@ -344,21 +325,26 @@ vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
     return final_answer;
 }
 
-vector<Point> way;
-size_t curr_index = 0;
+
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
     if(way.size() == 0) {
+        cout << "Way size is zero" << endl;
         way = bestPath(self, world, game);
     }
+
     Point current_tile = CurrentTile(self);
+    cout << "Current index is ";
+    cout << curr_index << endl;
+    cout << "Current tile is ";
+    current_tile.Print();
     if(curr_index != way.size() and current_tile == way[curr_index]) {
         curr_index++;
+
     }
-    int xCoord = way[curr_index].x_ + 0.5 * game.getTrackTileSize();
-    int yCoord = way[curr_index].y_ + 0.5 * game.getTrackTileSize();
+    int xCoord = way[curr_index].x_ * 800 + 0.5 * game.getTrackTileSize();
+    int yCoord = way[curr_index].y_ * 800 + 0.5 * game.getTrackTileSize();
     double angle = self.getAngleTo(xCoord, yCoord);
     double angleCar = self.getAngle();
-    bestPath(self, world, game);
     cout << xCoord << " " << yCoord << " " << angle << " " << angleCar << endl;
     if(angleCar > angle) {
         move.setWheelTurn(-0.8);
@@ -374,4 +360,6 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     }
 }
 
-MyStrategy::MyStrategy() { }
+MyStrategy::MyStrategy() {
+    curr_index = 0;
+}
