@@ -36,6 +36,19 @@ void Print(vector<Point> v) {
         e.Print();
     }
 }
+
+bool needLeft(double angle) {
+    if(angle < 0 ) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+double GetSpeed(const Car& self) {
+    return std::sqrt(self.getSpeedX() * self.getSpeedX() + self.getSpeedY() * self.getSpeedY());
+}
+
 typedef pair<Point, Point> Edge;
 
 bool HasHoleTop(TileType tyle) {
@@ -325,13 +338,46 @@ vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
     return final_answer;
 }
 
+bool isTurn(size_t index, vector<Point>& points) {
+    size_t n = points.size();
+    return points[(index - 1) % n].x_ != points[(index + 1) % n].x_ and     points[(index - 1) % n].y_ != points[(index + 1) % n].y_;
+}
+
+
+
+bool isRightTurn(size_t index, vector<Point>& points) {
+    if (index == 0 || index == points.size() - 1)
+        return false;
+    bool xIncr = points[index - 1].x_ < points[index + 1].x_;
+    bool yIncr = points[index - 1].y_ < points[index + 1].y_;
+    if (xIncr == yIncr) {
+        if (points[index].x_ != points[index - 1].x_) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    if (xIncr != yIncr) {
+        if (points[index].y_ != points[index - 1].y_) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+bool isLeftTurn(size_t index, vector<Point>& points) {
+    return !isRightTurn(index, points);
+}
 
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
     if(way.size() == 0) {
         cout << "Way size is zero" << endl;
         way = bestPath(self, world, game);
     }
-
+    if(curr_index == way.size()) {
+        curr_index = 0;
+    }
     Point current_tile = CurrentTile(self);
     cout << "Current index is ";
     cout << curr_index << endl;
@@ -343,21 +389,62 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     }
     int xCoord = way[curr_index].x_ * 800 + 0.5 * game.getTrackTileSize();
     int yCoord = way[curr_index].y_ * 800 + 0.5 * game.getTrackTileSize();
+    if(isTurn(curr_index, way)) {
+        if(way[(curr_index + 1) % way.size()].x_ > way[curr_index].x_) {
+            xCoord += 150;
+        }
+        if(way[(curr_index + 1) % way.size()].x_ < way[curr_index].x_) {
+            xCoord -= 150;
+        }
+
+        if(way[(curr_index - 1) % way.size()].x_ > way[curr_index].x_) {
+            xCoord += 150;
+        }
+        if(way[(curr_index - 1) % way.size()].x_ < way[curr_index].x_) {
+            xCoord -= 150;
+        }
+
+        if(way[(curr_index - 1) % way.size()].y_ < way[curr_index].y_) {
+            yCoord -= 150;
+        }
+        if(way[(curr_index - 1) % way.size()].y_ > way[curr_index].y_) {
+            yCoord += 150;
+        }
+
+        if(way[(curr_index + 1) % way.size()].y_ < way[curr_index].y_) {
+            yCoord -= 150;
+        }
+        if(way[(curr_index + 1) % way.size()].y_ > way[curr_index].y_) {
+            yCoord += 150;
+        }
+
+    }
     double angle = self.getAngleTo(xCoord, yCoord);
     double angleCar = self.getAngle();
-    cout << xCoord << " " << yCoord << " " << angle << " " << angleCar << endl;
-    if(angleCar > angle) {
-        move.setWheelTurn(-0.8);
-    } else {
-        move.setWheelTurn(0.8);
-    }
+    cout << xCoord << " " << yCoord << " " << angle << " " << GetSpeed(self) << endl;
     move.setEnginePower(1.0);
     move.setThrowProjectile(true);
     move.setSpillOil(true);
 
+
+
     if (world.getTick() > game.getInitialFreezeDurationTicks()) {
-        move.setUseNitro(true);
+
+        if(needLeft(angle)) {
+            move.setWheelTurn(-1.0);
+        } else {
+            move.setWheelTurn(1.0);
+        }
+        if(std::abs(angle) < 0.1) {
+            move.setWheelTurn(0.0);
+        }
+
+        if(std::abs(angle) > 1.3 && GetSpeed(self) > 5) {
+            move.setBrake(true);
+        }
+
     }
+
 }
 
 MyStrategy::MyStrategy() {
