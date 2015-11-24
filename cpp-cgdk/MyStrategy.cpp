@@ -104,7 +104,7 @@ EdgeBasedGraph ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
     set<Edge> edge_graph_vertices;
     map<pair<Edge, Edge>, int> edge_graph_edges;
     for(size_t i = 0; i < my_world.size(); ++i) {
-       for(size_t j = 0; j < my_world.size(); ++j) {
+       for(size_t j = 0; j < my_world[i].size(); ++j) {
             if(HasHoleBottom(my_world[i][j])) {
                 edge_graph_vertices.insert(Edge(Point(i, j), Point(i, j + 1)));
             }
@@ -247,11 +247,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
 
         //add all neighbours and end points
         Edge end = make_pair(target.second, Point(-1,-1));
-        cout << "current point";
-        target.first.Print();
-        target.second.Print();
         if(graph.edge_graph_vertices_.count(end) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, end)] < dist[end] ) {
-            cout << "End" << endl;
             dist[end] = dist[target] + graph.edge_graph_edges_[make_pair(target, end)];
             pred[end] = target;
             q.push(make_pair(-dist[end], end));
@@ -260,8 +256,6 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge left = make_pair(target.second, Point(target.second.x_ - 1,target.second.y_));
 
         if(graph.edge_graph_vertices_.count(left) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, left)] < dist[left] ) {
-            cout << "left" << endl;
-
             dist[left] = dist[target] + graph.edge_graph_edges_[make_pair(target, left)];
             pred[left] = target;
             q.push(make_pair(-dist[left], left));
@@ -270,7 +264,6 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge right = make_pair(target.second, Point(target.second.x_ + 1,target.second.y_));
 
         if(graph.edge_graph_vertices_.count(right) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, right)] < dist[right] ) {
-            cout << "right" << endl;
             dist[right] = dist[target] + graph.edge_graph_edges_[make_pair(target, right)];
             pred[right] = target;
             q.push(make_pair(-dist[right], right));
@@ -279,7 +272,6 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge up = make_pair(target.second, Point(target.second.x_,target.second.y_ - 1));
 
         if(graph.edge_graph_vertices_.count(up) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, up)] < dist[up] ) {
-            cout << "up" << endl;
             dist[up] = dist[target] + graph.edge_graph_edges_[make_pair(target, up)];
             pred[up] = target;
             q.push(make_pair(-dist[up], up));
@@ -288,7 +280,6 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge down = make_pair(target.second, Point(target.second.x_,target.second.y_ + 1));
 
         if(graph.edge_graph_vertices_.count(down) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, down)] < dist[down] ) {
-            cout << "down" << endl;
             dist[down] = dist[target] + graph.edge_graph_edges_[make_pair(target, down)];
             pred[down] = target;
             q.push(make_pair(-dist[down], down));
@@ -333,7 +324,6 @@ vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
         Direction direction = i == 0 ? world.getStartingDirection() : GetDirection(final_answer[final_answer.size() - 2], final_answer[final_answer.size() - 1]);
         vector<Point> answer = Dijkstra(graph, from, to, direction);
         cout << "Dijkstra run completed" << endl;
-        Print(answer);
         for(auto elem : answer) {
             if(final_answer.size() != 0 && elem != final_answer.back()) {
                 final_answer.push_back(elem);
