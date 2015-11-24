@@ -20,7 +20,9 @@ public:
     MyStrategy();
     vector<Point> way;
     size_t curr_index;
-
+    vector<double> speedVector;
+    bool isStunned;
+    int removeStun;
     void move(const model::Car& self, const model::World& world, const model::Game& game, model::Move& move);
 };
 

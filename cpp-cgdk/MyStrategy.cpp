@@ -1,5 +1,5 @@
 #include "MyStrategy.h"
-
+#include <math.h>
 #define PI 3.14159265358979323846
 #define _USE_MATH_DEFINES
 
@@ -247,7 +247,11 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
 
         //add all neighbours and end points
         Edge end = make_pair(target.second, Point(-1,-1));
+        cout << "current point";
+        target.first.Print();
+        target.second.Print();
         if(graph.edge_graph_vertices_.count(end) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, end)] < dist[end] ) {
+            cout << "End" << endl;
             dist[end] = dist[target] + graph.edge_graph_edges_[make_pair(target, end)];
             pred[end] = target;
             q.push(make_pair(-dist[end], end));
@@ -256,6 +260,8 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge left = make_pair(target.second, Point(target.second.x_ - 1,target.second.y_));
 
         if(graph.edge_graph_vertices_.count(left) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, left)] < dist[left] ) {
+            cout << "left" << endl;
+
             dist[left] = dist[target] + graph.edge_graph_edges_[make_pair(target, left)];
             pred[left] = target;
             q.push(make_pair(-dist[left], left));
@@ -264,6 +270,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge right = make_pair(target.second, Point(target.second.x_ + 1,target.second.y_));
 
         if(graph.edge_graph_vertices_.count(right) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, right)] < dist[right] ) {
+            cout << "right" << endl;
             dist[right] = dist[target] + graph.edge_graph_edges_[make_pair(target, right)];
             pred[right] = target;
             q.push(make_pair(-dist[right], right));
@@ -272,6 +279,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge up = make_pair(target.second, Point(target.second.x_,target.second.y_ - 1));
 
         if(graph.edge_graph_vertices_.count(up) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, up)] < dist[up] ) {
+            cout << "up" << endl;
             dist[up] = dist[target] + graph.edge_graph_edges_[make_pair(target, up)];
             pred[up] = target;
             q.push(make_pair(-dist[up], up));
@@ -280,6 +288,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
         Edge down = make_pair(target.second, Point(target.second.x_,target.second.y_ + 1));
 
         if(graph.edge_graph_vertices_.count(down) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, down)] < dist[down] ) {
+            cout << "down" << endl;
             dist[down] = dist[target] + graph.edge_graph_edges_[make_pair(target, down)];
             pred[down] = target;
             q.push(make_pair(-dist[down], down));
@@ -291,17 +300,17 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
 Direction GetDirection(Point from, Point to) {
     if(from.y_ == to.y_) {
         if(from.x_ == to.x_ + 1) {
-            return RIGHT;
-        } else if (from.x_ == to.x_ - 1) {
             return LEFT;
+        } else if (from.x_ == to.x_ - 1) {
+            return RIGHT;
         }
     }
 
     if(from.x_ == to.x_) {
         if(from.y_ == to.y_ + 1) {
-            return DOWN;
-        } else if (from.y_ == to.y_ - 1) {
             return UP;
+        } else if (from.y_ == to.y_ - 1) {
+            return DOWN;
         }
     }
     return UP;
@@ -324,7 +333,7 @@ vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
         Direction direction = i == 0 ? world.getStartingDirection() : GetDirection(final_answer[final_answer.size() - 2], final_answer[final_answer.size() - 1]);
         vector<Point> answer = Dijkstra(graph, from, to, direction);
         cout << "Dijkstra run completed" << endl;
-        //Print(answer);
+        Print(answer);
         for(auto elem : answer) {
             if(final_answer.size() != 0 && elem != final_answer.back()) {
                 final_answer.push_back(elem);
@@ -343,7 +352,14 @@ bool isTurn(size_t index, vector<Point>& points) {
     return points[(index - 1) % n].x_ != points[(index + 1) % n].x_ and     points[(index - 1) % n].y_ != points[(index + 1) % n].y_;
 }
 
-
+bool LastFiveAroundZero(vector<double>& speedVector) {
+    for(int i = max(0, (int)speedVector.size() - 5); i < speedVector.size(); ++i) {
+        if(speedVector[i] > 0.1) {
+            return false;
+        }
+    }
+    return true;
+}
 
 bool isRightTurn(size_t index, vector<Point>& points) {
     if (index == 0 || index == points.size() - 1)
@@ -370,6 +386,25 @@ bool isLeftTurn(size_t index, vector<Point>& points) {
     return !isRightTurn(index, points);
 }
 
+int lengthOfTheLine(size_t index, vector<Point>& points) {
+    if(index <= 1) {
+        return 0;
+    }
+    int answer = 2;
+    int x_diff = points[index].x_ - points[index - 1].x_;
+    int y_diff = points[index].y_ - points[index - 1].y_;
+    int curr = index + 1;
+    while(curr < points.size()) {
+        Point temp(points[curr - 1].x_ + x_diff, points[curr - 1].y_ + y_diff );
+        if(temp != points[curr]) {
+            break;
+        }
+        answer++;
+        curr++;
+    }
+    return answer;
+}
+
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
     if(way.size() == 0) {
         cout << "Way size is zero" << endl;
@@ -378,6 +413,11 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     if(curr_index == way.size()) {
         curr_index = 0;
     }
+
+    if(world.getTick() > removeStun) {
+        isStunned = false;
+    }
+
     Point current_tile = CurrentTile(self);
     cout << "Current index is ";
     cout << curr_index << endl;
@@ -390,6 +430,9 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     int xCoord = way[curr_index].x_ * 800 + 0.5 * game.getTrackTileSize();
     int yCoord = way[curr_index].y_ * 800 + 0.5 * game.getTrackTileSize();
     if(isTurn(curr_index, way)) {
+
+        move.setSpillOil(true);
+
         if(way[(curr_index + 1) % way.size()].x_ > way[curr_index].x_) {
             xCoord += 150;
         }
@@ -421,32 +464,76 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     }
     double angle = self.getAngleTo(xCoord, yCoord);
     double angleCar = self.getAngle();
-    cout << xCoord << " " << yCoord << " " << angle << " " << GetSpeed(self) << endl;
+    double engPower = self.getEnginePower();
+    cout << xCoord << " " << yCoord << " " << angle << " " << GetSpeed(self) << " " << engPower << endl;
     move.setEnginePower(1.0);
-    move.setThrowProjectile(true);
-    move.setSpillOil(true);
+    for(auto car : world.getCars()) {
+        if(car.getId() != self.getId() && abs(self.getAngleTo(car)) < 0.1)
+            move.setThrowProjectile(true);
+    }
 
-
+    speedVector.push_back(GetSpeed(self));
 
     if (world.getTick() > game.getInitialFreezeDurationTicks()) {
 
-        if(needLeft(angle)) {
-            move.setWheelTurn(-1.0);
-        } else {
-            move.setWheelTurn(1.0);
-        }
-        if(std::abs(angle) < 0.1) {
-            move.setWheelTurn(0.0);
+        if(lengthOfTheLine(curr_index, way) > 5) {
+            //TODO: something about angle (should be close to pi*n/2)
+            //move.setUseNitro(true);
         }
 
-        if(std::abs(angle) > 1.3 && GetSpeed(self) > 5) {
-            move.setBrake(true);
+        if(!isStunned) {
+            if(isgreater(engPower, 0.0)) {
+                if(needLeft(angle)) {
+                    move.setWheelTurn(-1.0);
+                } else {
+                    move.setWheelTurn(1.0);
+                }
+            } else {
+                if(needLeft(angle)) {
+                    move.setWheelTurn(1.0);
+                } else {
+                    move.setWheelTurn(-1.0);
+                }
+            }
+            if(std::abs(angle) < 0.1) {
+                move.setWheelTurn(0.0);
+            }
+
+            if(std::abs(angle) > 1.3 && GetSpeed(self) > 5) {
+                move.setBrake(true);
+            }
+        } else {
+            if(isless(engPower, 0.0)) {
+                if(needLeft(angle)) {
+                    move.setWheelTurn(1.0);
+                } else {
+                    move.setWheelTurn(-1.0);
+                }
+            } else {
+                if(needLeft(angle)) {
+                    move.setWheelTurn(-1.0);
+                } else {
+                    move.setWheelTurn(1.0);
+                }
+            }
+            move.setEnginePower(-1.0);
         }
 
     }
+
+
+    if (world.getTick() > game.getInitialFreezeDurationTicks() + 10) {
+        if(LastFiveAroundZero(speedVector)) {
+            removeStun = world.getTick() + 25;
+            isStunned = true;
+        }
+    }
+
 
 }
 
 MyStrategy::MyStrategy() {
     curr_index = 0;
+    isStunned = false;
+    removeStun = -1;
 }
