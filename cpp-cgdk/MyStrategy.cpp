@@ -3,33 +3,6 @@
 #define PI 3.14159265358979323846
 #define _USE_MATH_DEFINES
 
-struct Point {
-
-    Point(int x = -100, int y = -100)
-    : x_(x), y_(y) {
-
-    };
-
-    bool operator==(const Point &other) const {
-        return x_ == other.x_ && y_ == other.y_;
-    }
-
-    bool operator!=(const Point &other) const {
-        return !(*this == other);
-    }
-
-
-    bool operator<(const Point &other) const {
-        return y_ < other.y_ or (y_ == other.y_ and x_ < other.x_);
-    }
-
-    void Print() {
-        cout << x_ << " " << y_ << endl;
-    }
-
-    int x_;
-    int y_;
-};
 
 void Print(vector<Point> v) {
     for(auto e : v) {
@@ -49,7 +22,6 @@ double GetSpeed(const Car& self) {
     return std::sqrt(self.getSpeedX() * self.getSpeedX() + self.getSpeedY() * self.getSpeedY());
 }
 
-typedef pair<Point, Point> Edge;
 
 bool HasHoleTop(TileType tyle) {
     return tyle == VERTICAL || tyle == LEFT_BOTTOM_CORNER || tyle == RIGHT_BOTTOM_CORNER ||
@@ -92,13 +64,6 @@ bool IsTurn(Edge e1, Edge e2) {
     return !IsStraightLine(e1, e2);
 }
 
-struct EdgeBasedGraph {
-    set<Edge> edge_graph_vertices_;
-    map<pair<Edge, Edge>, int> edge_graph_edges_;
-    EdgeBasedGraph(set<Edge>& edge_graph_vertices, map<pair<Edge, Edge>, int>& edge_graph_edges)
-    : edge_graph_vertices_(edge_graph_vertices), edge_graph_edges_(edge_graph_edges)
-    {  }
-};
 
 EdgeBasedGraph ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
     set<Edge> edge_graph_vertices;
@@ -138,6 +103,23 @@ EdgeBasedGraph ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
     }
 
     return EdgeBasedGraph(edge_graph_vertices, edge_graph_edges);
+}
+
+Direction GetSomeDirection(const Car& self) {
+    if(abs(self.getAngle()) <= PI/4) {
+        return RIGHT;
+    }
+    if(abs(self.getAngle()) >= 3*PI/4) {
+        return LEFT;
+    }
+
+    if(self.getAngle() > 0) {
+        return UP;
+    }
+
+    if(self.getAngle() < 0) {
+        return DOWN;
+    }
 }
 
 void AddStartAndEndNodes(EdgeBasedGraph& graph, Point startPoint) {
@@ -197,13 +179,13 @@ vector<Point> PathFromPreds(map<Edge, Edge> preds, Point end, Point start) {
 vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, Direction direction) {
     if(direction == RIGHT) {
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ + 1, startPoint.y_)))] = 0;
-        graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ - 1, startPoint.y_)))] = 100;
+        graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ - 1, startPoint.y_)))] = 8;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ + 1)))] = 2;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ - 1)))] = 2;
     }
 
     if(direction == LEFT) {
-        graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ + 1, startPoint.y_)))] = 100;
+        graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ + 1, startPoint.y_)))] = 8;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ - 1, startPoint.y_)))] = 0;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ + 1)))] = 2;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ - 1)))] = 2;
@@ -211,14 +193,14 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
     if(direction == UP) {
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ + 1, startPoint.y_)))] = 2;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ - 1, startPoint.y_)))] = 2;
-        graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ + 1)))] = 100;
+        graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ + 1)))] = 8;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ - 1)))] = 0;
     }
     if(direction == DOWN) {
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ + 1, startPoint.y_)))] = 2;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_ - 1, startPoint.y_)))] = 2;
         graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ + 1)))] = 0;
-        graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ - 1)))] = 100;
+        graph.edge_graph_edges_[make_pair(Edge(make_pair(Point(-1,-1), startPoint)), make_pair(startPoint, Point(startPoint.x_, startPoint.y_ - 1)))] = 8;
     }
 
     priority_queue<pair<int, Edge>> q;
@@ -308,19 +290,22 @@ Direction GetDirection(Point from, Point to) {
 }
 
 
-vector<Point> bestPath(const Car& self, const World& world, const Game& game) {
+vector<Point> MyStrategy::bestPath(const Car& self, const World& world, const Game& game) {
+    for(auto e : world.getWaypoints()) {
+        cout << e[0] << " " << e[1] << endl;
+    }
     auto space = world.getTilesXY();
     Point startPoint = CurrentTile(self);
     Direction startDirection = world.getStartingDirection();
-    auto graph = ConvertToEdgeBasedGraph(space);
+    graph = ConvertToEdgeBasedGraph(space);
     cout << "Graph build" << endl;
     AddStartAndEndNodes(graph, startPoint);
     cout << "Start and end nodes added" << endl;
 
     vector<Point> final_answer;
-    for(int i = 0; i < world.getWaypoints().size() - 1; ++i) {
+    for(int i = 0; i < world.getWaypoints().size(); ++i) {
         Point from = Point(world.getWaypoints()[i][0], world.getWaypoints()[i][1]);
-        Point to = Point(world.getWaypoints()[i+1][0], world.getWaypoints()[i+1][1]);
+        Point to = Point(world.getWaypoints()[(i+1) % world.getWaypoints().size()][0], world.getWaypoints()[(i+1) % world.getWaypoints().size()][1]);
         Direction direction = i == 0 ? world.getStartingDirection() : GetDirection(final_answer[final_answer.size() - 2], final_answer[final_answer.size() - 1]);
         vector<Point> answer = Dijkstra(graph, from, to, direction);
         cout << "Dijkstra run completed" << endl;
@@ -395,6 +380,43 @@ int lengthOfTheLine(size_t index, vector<Point>& points) {
     return answer;
 }
 
+
+void SetCoords(int& xCoord, int& yCoord, vector<Point>& way, size_t curr_index, Move& move) {
+    if(isTurn(curr_index, way)) {
+
+        move.setSpillOil(true);
+
+        if(way[(curr_index + 1) % way.size()].x_ > way[curr_index].x_) {
+            xCoord += 269;
+        }
+        if(way[(curr_index + 1) % way.size()].x_ < way[curr_index].x_) {
+            xCoord -= 269;
+        }
+
+        if(way[(curr_index - 1) % way.size()].x_ > way[curr_index].x_) {
+            xCoord += 269;
+        }
+        if(way[(curr_index - 1) % way.size()].x_ < way[curr_index].x_) {
+            xCoord -= 269;
+        }
+
+        if(way[(curr_index - 1) % way.size()].y_ < way[curr_index].y_) {
+            yCoord -= 269;
+        }
+        if(way[(curr_index - 1) % way.size()].y_ > way[curr_index].y_) {
+            yCoord += 269;
+        }
+
+        if(way[(curr_index + 1) % way.size()].y_ < way[curr_index].y_) {
+            yCoord -= 269;
+        }
+        if(way[(curr_index + 1) % way.size()].y_ > way[curr_index].y_) {
+            yCoord += 269;
+        }
+
+    }
+}
+
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
     if(way.size() == 0) {
         cout << "Way size is zero" << endl;
@@ -413,45 +435,31 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     cout << curr_index << endl;
     cout << "Current tile is ";
     current_tile.Print();
+
+
     if(curr_index != way.size() and current_tile == way[curr_index]) {
         curr_index++;
-
+        additional_way.clear();
+        lostWay = false;
+    } else if(lostWay and additional_way[additional_index] == current_tile) {
+        additional_index++;
     }
-    int xCoord = way[curr_index].x_ * 800 + 0.5 * game.getTrackTileSize();
-    int yCoord = way[curr_index].y_ * 800 + 0.5 * game.getTrackTileSize();
-    if(isTurn(curr_index, way)) {
 
-        move.setSpillOil(true);
-
-        if(way[(curr_index + 1) % way.size()].x_ > way[curr_index].x_) {
-            xCoord += 150;
-        }
-        if(way[(curr_index + 1) % way.size()].x_ < way[curr_index].x_) {
-            xCoord -= 150;
-        }
-
-        if(way[(curr_index - 1) % way.size()].x_ > way[curr_index].x_) {
-            xCoord += 150;
-        }
-        if(way[(curr_index - 1) % way.size()].x_ < way[curr_index].x_) {
-            xCoord -= 150;
-        }
-
-        if(way[(curr_index - 1) % way.size()].y_ < way[curr_index].y_) {
-            yCoord -= 150;
-        }
-        if(way[(curr_index - 1) % way.size()].y_ > way[curr_index].y_) {
-            yCoord += 150;
-        }
-
-        if(way[(curr_index + 1) % way.size()].y_ < way[curr_index].y_) {
-            yCoord -= 150;
-        }
-        if(way[(curr_index + 1) % way.size()].y_ > way[curr_index].y_) {
-            yCoord += 150;
-        }
-
+    if((!lostWay and curr_index > 0 && current_tile != way[curr_index - 1]) || (lostWay and current_tile != additional_way[additional_index - 1])) {
+        additional_index = 0;
+        lostWay = true;
+        additional_way = Dijkstra(graph, current_tile, way[curr_index], GetSomeDirection(self));
     }
+
+    int xCoord = lostWay ? additional_way[additional_index].x_ * 800 + 0.5 * game.getTrackTileSize() : way[curr_index].x_ * 800 + 0.5 * game.getTrackTileSize();
+    int yCoord = lostWay ? additional_way[additional_index].y_ * 800 + 0.5 * game.getTrackTileSize() : way[curr_index].y_ * 800 + 0.5 * game.getTrackTileSize();
+
+    if(lostWay) {
+        SetCoords(xCoord, yCoord, additional_way, additional_index, move);
+    } else {
+        SetCoords(xCoord, yCoord, way, curr_index, move);
+    }
+
     double angle = self.getAngleTo(xCoord, yCoord);
     double angleCar = self.getAngle();
     double engPower = self.getEnginePower();
@@ -470,6 +478,13 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
             //TODO: something about angle (should be close to pi*n/2)
             //move.setUseNitro(true);
         }
+
+        if(lengthOfTheLine(curr_index, way) < 3 and GetSpeed(self) > 15) {
+            //TODO: something about angle (should be close to pi*n/2)
+            //move.setUseNitro(true);
+            move.setBrake(true);
+        }
+
 
         if(!isStunned) {
             if(isgreater(engPower, 0.0)) {
@@ -524,6 +539,9 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
 
 MyStrategy::MyStrategy() {
     curr_index = 0;
+    additional_index = 0;
+    lostWay = false;
     isStunned = false;
     removeStun = -1;
 }
+
