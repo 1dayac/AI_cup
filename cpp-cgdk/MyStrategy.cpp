@@ -488,11 +488,12 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
 
         if(!isStunned) {
             if(isgreater(engPower, 0.0)) {
-                if(needLeft(angle)) {
-                    move.setWheelTurn(-1.0);
-                } else {
-                    move.setWheelTurn(1.0);
-                }
+                // if(needLeft(angle)) {
+                // move.setWheelTurn(-1.0);
+                // } else {
+                // move.setWheelTurn(1.0);
+                // }
+                move.setWheelTurn(-self.getAngularSpeed()*self.getAngularSpeed()/(2*self.getAngleTo(xCoord, yCoord)));
             } else {
                 if(needLeft(angle)) {
                     move.setWheelTurn(1.0);
