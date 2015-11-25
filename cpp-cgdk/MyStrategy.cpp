@@ -337,19 +337,19 @@ bool LastFiveAroundZero(vector<double>& speedVector) {
 }
 
 bool isRightTurn(size_t index, vector<Point>& points) {
-    if (index == 0 || index == points.size() - 1)
+    if (index <= 0 || index >= points.size() - 1)
         return false;
-    bool xIncr = points[index - 1].x_ < points[index + 1].x_;
-    bool yIncr = points[index - 1].y_ < points[index + 1].y_;
+    bool xIncr = points[(index - 1) % points.size()].x_ < points[(index + 1) % points.size()].x_;
+    bool yIncr = points[(index - 1) % points.size()].y_ < points[(index + 1) % points.size()].y_;
     if (xIncr == yIncr) {
-        if (points[index].x_ != points[index - 1].x_) {
+        if (points[index].x_ != points[(index - 1) % points.size()].x_) {
             return true;
         } else {
             return false;
         }
     }
     if (xIncr != yIncr) {
-        if (points[index].y_ != points[index - 1].y_) {
+        if (points[index].y_ != points[(index - 1) % points.size()].y_) {
             return true;
         } else {
             return false;
@@ -380,40 +380,58 @@ int lengthOfTheLine(size_t index, vector<Point>& points) {
     return answer;
 }
 
+void SetCoordsInternal(int& xCoord, int& yCoord, vector<Point>& way, size_t curr_index, Move& move, int coordsize) {
+
+    if(way[(curr_index + 1) % way.size()].x_ > way[curr_index].x_) {
+        xCoord += coordsize;
+    }
+    if(way[(curr_index + 1) % way.size()].x_ < way[curr_index].x_) {
+        xCoord -= coordsize;
+    }
+
+    if(way[(curr_index - 1) % way.size()].x_ > way[curr_index].x_) {
+        xCoord += coordsize;
+    }
+    if(way[(curr_index - 1) % way.size()].x_ < way[curr_index].x_) {
+        xCoord -= coordsize;
+    }
+
+    if(way[(curr_index - 1) % way.size()].y_ < way[curr_index].y_) {
+        yCoord -= coordsize;
+    }
+    if(way[(curr_index - 1) % way.size()].y_ > way[curr_index].y_) {
+        yCoord += coordsize;
+    }
+
+    if(way[(curr_index + 1) % way.size()].y_ < way[curr_index].y_) {
+        yCoord -= coordsize;
+    }
+    if(way[(curr_index + 1) % way.size()].y_ > way[curr_index].y_) {
+        yCoord += coordsize;
+    }
+}
 
 void SetCoords(int& xCoord, int& yCoord, vector<Point>& way, size_t curr_index, Move& move) {
+
+
+    if(isTurn(curr_index, way) and isTurn(curr_index + 1, way)) {
+        if( isRightTurn(curr_index, way) and isRightTurn(curr_index + 1, way)) {
+            SetCoordsInternal(xCoord, yCoord, way, curr_index, move, 200);
+            move.setSpillOil(true);
+            return;
+        }
+        if( isLeftTurn(curr_index, way) and isLeftTurn(curr_index + 1, way)) {
+            SetCoordsInternal(xCoord, yCoord, way, curr_index, move, 200);
+            move.setSpillOil(true);
+            return;
+        }
+
+    }
+
     if(isTurn(curr_index, way)) {
-
+        SetCoordsInternal(xCoord, yCoord, way, curr_index, move, 269);
         move.setSpillOil(true);
-
-        if(way[(curr_index + 1) % way.size()].x_ > way[curr_index].x_) {
-            xCoord += 269;
-        }
-        if(way[(curr_index + 1) % way.size()].x_ < way[curr_index].x_) {
-            xCoord -= 269;
-        }
-
-        if(way[(curr_index - 1) % way.size()].x_ > way[curr_index].x_) {
-            xCoord += 269;
-        }
-        if(way[(curr_index - 1) % way.size()].x_ < way[curr_index].x_) {
-            xCoord -= 269;
-        }
-
-        if(way[(curr_index - 1) % way.size()].y_ < way[curr_index].y_) {
-            yCoord -= 269;
-        }
-        if(way[(curr_index - 1) % way.size()].y_ > way[curr_index].y_) {
-            yCoord += 269;
-        }
-
-        if(way[(curr_index + 1) % way.size()].y_ < way[curr_index].y_) {
-            yCoord -= 269;
-        }
-        if(way[(curr_index + 1) % way.size()].y_ > way[curr_index].y_) {
-            yCoord += 269;
-        }
-
+        return;
     }
 }
 
@@ -446,9 +464,19 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     }
 
     if((!lostWay and curr_index > 0 && current_tile != way[curr_index - 1]) || (lostWay and current_tile != additional_way[additional_index - 1])) {
+        Point next(self.getNextWaypointX(), self.getNextWaypointY());
+        for(int i = curr_index; ;++i) {
+            if(i == way.size()) {
+                i = 0;
+            }
+            if(next == way[i]) {
+                curr_index = i;
+                break;
+            }
+        }
         additional_index = 0;
         lostWay = true;
-        additional_way = Dijkstra(graph, current_tile, way[curr_index], GetSomeDirection(self));
+        additional_way = Dijkstra(graph, current_tile, next, GetSomeDirection(self));
     }
 
     int xCoord = lostWay ? additional_way[additional_index].x_ * 800 + 0.5 * game.getTrackTileSize() : way[curr_index].x_ * 800 + 0.5 * game.getTrackTileSize();
@@ -476,7 +504,9 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
 
         if(lengthOfTheLine(curr_index, way) > 5) {
             //TODO: something about angle (should be close to pi*n/2)
-            //move.setUseNitro(true);
+            if(abs(self.getAngleTo(xCoord, yCoord)) < 0.1 && world.getTick() > 100) {
+                move.setUseNitro(true);
+            }
         }
 
         if(lengthOfTheLine(curr_index, way) < 3 and GetSpeed(self) > 15) {
@@ -488,12 +518,13 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
 
         if(!isStunned) {
             if(isgreater(engPower, 0.0)) {
-                // if(needLeft(angle)) {
-                // move.setWheelTurn(-1.0);
-                // } else {
-                // move.setWheelTurn(1.0);
-                // }
-                move.setWheelTurn(-self.getAngularSpeed()*self.getAngularSpeed()/(2*self.getAngleTo(xCoord, yCoord)));
+                 if(needLeft(angle)) {
+                 move.setWheelTurn(-1.0);
+                 } else {
+                 move.setWheelTurn(1.0);
+                 }
+                //move.setWheelTurn(self.getAngularSpeed()*self.getAngularSpeed()/(2*self.getAngleTo(xCoord, yCoord)));
+                cout << "Angle:" << self.getAngularSpeed()*self.getAngularSpeed()/(2*self.getAngleTo(xCoord, yCoord)) << endl;
             } else {
                 if(needLeft(angle)) {
                     move.setWheelTurn(1.0);
