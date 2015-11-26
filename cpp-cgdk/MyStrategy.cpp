@@ -55,8 +55,8 @@ bool Adjacent(Edge e1, Edge e2) {
 }
 
 bool IsStraightLine(Edge e1, Edge e2) {
-    return (abs(e1.first.x_ - e2.second.x_) == 0 and abs(e1.first.y_ - e2.second.y_) == 2) ||
-           (abs(e1.first.x_ - e2.second.x_) == 2 and abs(e1.first.y_ - e2.second.y_) == 0);
+    return (abs(e1.first.x_ - e2.second.x_) == 0 && abs(e1.first.y_ - e2.second.y_) == 2) ||
+           (abs(e1.first.x_ - e2.second.x_) == 2 && abs(e1.first.y_ - e2.second.y_) == 0);
 }
 
 
@@ -206,7 +206,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
     priority_queue<pair<int, Edge>> q;
     map<Edge, int> dist;
     for(auto e : graph.edge_graph_vertices_) {
-        dist[e] = INFINITY;
+        dist[e] = 100000;
     }
 
     map<Edge, Edge> pred;
@@ -227,9 +227,9 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
             return PathFromPreds(pred, endPoint, startPoint);
         }
 
-        //add all neighbours and end points
+        //add all neighbours && end points
         Edge end = make_pair(target.second, Point(-1,-1));
-        if(graph.edge_graph_vertices_.count(end) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, end)] < dist[end] ) {
+        if(graph.edge_graph_vertices_.count(end) > 0 && dist[target] + graph.edge_graph_edges_[make_pair(target, end)] < dist[end] ) {
             dist[end] = dist[target] + graph.edge_graph_edges_[make_pair(target, end)];
             pred[end] = target;
             q.push(make_pair(-dist[end], end));
@@ -237,7 +237,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
 
         Edge left = make_pair(target.second, Point(target.second.x_ - 1,target.second.y_));
 
-        if(graph.edge_graph_vertices_.count(left) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, left)] < dist[left] ) {
+        if(graph.edge_graph_vertices_.count(left) > 0 && dist[target] + graph.edge_graph_edges_[make_pair(target, left)] < dist[left] ) {
             dist[left] = dist[target] + graph.edge_graph_edges_[make_pair(target, left)];
             pred[left] = target;
             q.push(make_pair(-dist[left], left));
@@ -245,7 +245,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
 
         Edge right = make_pair(target.second, Point(target.second.x_ + 1,target.second.y_));
 
-        if(graph.edge_graph_vertices_.count(right) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, right)] < dist[right] ) {
+        if(graph.edge_graph_vertices_.count(right) > 0 && dist[target] + graph.edge_graph_edges_[make_pair(target, right)] < dist[right] ) {
             dist[right] = dist[target] + graph.edge_graph_edges_[make_pair(target, right)];
             pred[right] = target;
             q.push(make_pair(-dist[right], right));
@@ -253,7 +253,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
 
         Edge up = make_pair(target.second, Point(target.second.x_,target.second.y_ - 1));
 
-        if(graph.edge_graph_vertices_.count(up) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, up)] < dist[up] ) {
+        if(graph.edge_graph_vertices_.count(up) > 0 && dist[target] + graph.edge_graph_edges_[make_pair(target, up)] < dist[up] ) {
             dist[up] = dist[target] + graph.edge_graph_edges_[make_pair(target, up)];
             pred[up] = target;
             q.push(make_pair(-dist[up], up));
@@ -261,7 +261,7 @@ vector<Point> Dijkstra(EdgeBasedGraph graph, Point startPoint, Point endPoint, D
 
         Edge down = make_pair(target.second, Point(target.second.x_,target.second.y_ + 1));
 
-        if(graph.edge_graph_vertices_.count(down) > 0 and dist[target] + graph.edge_graph_edges_[make_pair(target, down)] < dist[down] ) {
+        if(graph.edge_graph_vertices_.count(down) > 0 && dist[target] + graph.edge_graph_edges_[make_pair(target, down)] < dist[down] ) {
             dist[down] = dist[target] + graph.edge_graph_edges_[make_pair(target, down)];
             pred[down] = target;
             q.push(make_pair(-dist[down], down));
@@ -309,7 +309,7 @@ vector<Point> MyStrategy::bestPath(const Car& self, const World& world, const Ga
         Direction direction = i == 0 ? world.getStartingDirection() : GetDirection(final_answer[final_answer.size() - 2], final_answer[final_answer.size() - 1]);
         vector<Point> answer = Dijkstra(graph, from, to, direction);
         cout << "Dijkstra run completed" << endl;
-        for(auto elem : answer) {
+        for(Point elem : answer) {
             if(final_answer.size() != 0 && elem != final_answer.back()) {
                 final_answer.push_back(elem);
             }
@@ -324,7 +324,7 @@ vector<Point> MyStrategy::bestPath(const Car& self, const World& world, const Ga
 
 bool isTurn(size_t index, vector<Point>& points) {
     size_t n = points.size();
-    return points[(index - 1) % n].x_ != points[(index + 1) % n].x_ and     points[(index - 1) % n].y_ != points[(index + 1) % n].y_;
+    return points[(index - 1) % n].x_ != points[(index + 1) % n].x_ &&     points[(index - 1) % n].y_ != points[(index + 1) % n].y_;
 }
 
 bool LastFiveAroundZero(vector<double>& speedVector) {
@@ -414,13 +414,13 @@ void SetCoordsInternal(int& xCoord, int& yCoord, vector<Point>& way, size_t curr
 void SetCoords(int& xCoord, int& yCoord, vector<Point>& way, size_t curr_index, Move& move) {
 
 
-    if(isTurn(curr_index, way) and isTurn(curr_index + 1, way)) {
-        if( isRightTurn(curr_index, way) and isRightTurn(curr_index + 1, way)) {
+    if(isTurn(curr_index, way) && isTurn(curr_index + 1, way)) {
+        if( isRightTurn(curr_index, way) && isRightTurn(curr_index + 1, way)) {
             SetCoordsInternal(xCoord, yCoord, way, curr_index, move, 200);
             move.setSpillOil(true);
             return;
         }
-        if( isLeftTurn(curr_index, way) and isLeftTurn(curr_index + 1, way)) {
+        if( isLeftTurn(curr_index, way) && isLeftTurn(curr_index + 1, way)) {
             SetCoordsInternal(xCoord, yCoord, way, curr_index, move, 200);
             move.setSpillOil(true);
             return;
@@ -432,6 +432,31 @@ void SetCoords(int& xCoord, int& yCoord, vector<Point>& way, size_t curr_index, 
         SetCoordsInternal(xCoord, yCoord, way, curr_index, move, 269);
         move.setSpillOil(true);
         return;
+    }
+}
+
+double MyStrategy::getWheelTurnW(double alpha, const Car& self, const Game& game){
+	double turn=0;
+	double turn_max = 1;
+	double turn_min = -1;
+	double dw_max = min(self.getWheelTurn() + 0.5, 1.0)*game.getCarAngularSpeedFactor() * pow((pow(self.getSpeedX(), 2) + pow(self.getSpeedY(), 2)), 0.5);
+	double dw_min = max(self.getWheelTurn() - 0.5, -1.0)*game.getCarAngularSpeedFactor() * pow((pow(self.getSpeedX(), 2) + pow(self.getSpeedY(), 2)), 0.5);
+	cout << "dw_min - " << dw_min << ", dw_max - " << dw_max << endl;
+	cout<<"alpha=="<<alpha<<endl;
+	//if (alpha == 0){ return 0; }
+	if ((alpha <= self.getAngularSpeed() + dw_max) && (alpha >= self.getAngularSpeed() + dw_min)){
+		cout << "return " << (alpha - self.getAngularSpeed() - dw_min) / (dw_max - dw_min) << endl;
+		return (alpha - self.getAngularSpeed() - dw_min) / (dw_max - dw_min);
+    }
+    else{
+		if (alpha > self.getAngularSpeed() + dw_max){
+			cout << "return " << 1 << endl;
+            return 1;//getWheelTurn(alpha-dw_max);
+        }
+        else{
+			cout << "return " << -1 << endl;
+            return -1;//getWheelTurn(-(alpha-dw_min));
+        }
     }
 }
 
@@ -455,15 +480,15 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
     current_tile.Print();
 
 
-    if(curr_index != way.size() and current_tile == way[curr_index]) {
+    if(curr_index != way.size() && current_tile == way[curr_index]) {
         curr_index++;
         additional_way.clear();
         lostWay = false;
-    } else if(lostWay and additional_way[additional_index] == current_tile) {
+    } else if(lostWay && additional_way[additional_index] == current_tile) {
         additional_index++;
     }
 
-    if((!lostWay and curr_index > 0 && current_tile != way[curr_index - 1]) || (lostWay and current_tile != additional_way[additional_index - 1])) {
+    if((!lostWay && curr_index > 0 && current_tile != way[curr_index - 1]) || (lostWay && additional_index > 0 && current_tile != additional_way[additional_index - 1])) {
         Point next(self.getNextWaypointX(), self.getNextWaypointY());
         for(int i = curr_index; ;++i) {
             if(i == way.size()) {
@@ -474,6 +499,7 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
                 break;
             }
         }
+
         additional_index = 0;
         lostWay = true;
         additional_way = Dijkstra(graph, current_tile, next, GetSomeDirection(self));
@@ -510,7 +536,7 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
             }
         }
 
-        if(lengthOfTheLine(curr_index, way) < 3 and GetSpeed(self) > 15) {
+        if(lengthOfTheLine(curr_index, way) < 3 && GetSpeed(self) > 15) {
             //TODO: something about angle (should be close to pi*n/2)
             //move.setUseNitro(true);
             move.setBrake(true);
@@ -519,13 +545,14 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
 
         if(!isStunned) {
             if(isgreater(engPower, 0.0)) {
-                 if(needLeft(angle)) {
-                 move.setWheelTurn(-1.0);
-                 } else {
-                 move.setWheelTurn(1.0);
-                 }
-                //move.setWheelTurn(self.getAngularSpeed()*self.getAngularSpeed()/(2*self.getAngleTo(xCoord, yCoord)));
-                cout << "Angle:" << self.getAngularSpeed()*self.getAngularSpeed()/(2*self.getAngleTo(xCoord, yCoord)) << endl;
+                move.setWheelTurn(getWheelTurnW(angle, self, game));
+				cout<<"w==" << self.getAngularSpeed()<<endl;
+//                if(needLeft(angle)) {
+//                    move.setWheelTurn(-1.0);
+//                } else {
+//                    move.setWheelTurn(1.0);
+//                }
+
             } else {
                 if(needLeft(angle)) {
                     move.setWheelTurn(1.0);

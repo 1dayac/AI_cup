@@ -31,7 +31,7 @@ struct Point {
 
 
     bool operator<(const Point &other) const {
-        return y_ < other.y_ or (y_ == other.y_ and x_ < other.x_);
+        return y_ < other.y_ || (y_ == other.y_ && x_ < other.x_);
     }
 
     void Print() {
@@ -67,6 +67,7 @@ public:
     bool isStunned;
     bool lostWay;
     int removeStun;
+	double getWheelTurnW(double alpha, const Car& self, const Game& game);
     void move(const model::Car& self, const model::World& world, const model::Game& game, model::Move& move);
     vector<Point> bestPath(const Car& self, const World& world, const Game& game);
     EdgeBasedGraph graph;
