@@ -22,6 +22,9 @@ double GetSpeed(const Car& self) {
     return std::sqrt(self.getSpeedX() * self.getSpeedX() + self.getSpeedY() * self.getSpeedY());
 }
 
+double GetDistance(Point a, Point b) {
+    return sqrt(pow(a.x_ - b.x_, 2) + pow(a.y_ - b.y_, 2));
+}
 
 bool HasHoleTop(TileType tyle) {
     return tyle == VERTICAL || tyle == LEFT_BOTTOM_CORNER || tyle == RIGHT_BOTTOM_CORNER ||
@@ -518,9 +521,48 @@ void SetCoords(int& xCoord, int& yCoord, vector<Point>& way, int curr_index, Mov
     }
 
     if(isTurn(curr_index, way)) {
-        SetCoordsInternal(xCoord, yCoord, way, curr_index, move, 239);
+        SetCoordsInternal(xCoord, yCoord, way, curr_index, move, 195);
         return;
     }
+
+    int l = lengthOfTheLine(curr_index, way);
+
+    if(isLeftTurn((curr_index + l - 1) % way.size(), way)) {
+        Direction d = GetDirection(way[curr_index], way[(curr_index + 1) % way.size()]);
+        if(d == UP) {
+            xCoord += 100;
+        }
+        if(d == DOWN) {
+            xCoord -= 100;
+        }
+        if(d == LEFT) {
+            yCoord -= 100;
+        }
+        if(d == RIGHT) {
+            yCoord += 100;
+        }
+
+        return;
+    }
+
+    if(isRightTurn((curr_index + l - 1) % way.size(), way)) {
+        Direction d = GetDirection(way[curr_index], way[(curr_index + 1) % way.size()]);
+        if(d == UP) {
+            xCoord -= 100;
+        }
+        if(d == DOWN) {
+            xCoord += 100;
+        }
+        if(d == LEFT) {
+            yCoord += 100;
+        }
+        if(d == RIGHT) {
+            yCoord -= 100;
+        }
+
+        return;
+    }
+
 }
 
 
@@ -549,6 +591,9 @@ void FireInTheHole(const Car& self, const World& world, Move& move) {
     }
 }
 
+
+
+
 void ChangeCoordsToBonus(int& xCoord, int& yCoord, const World& world, const Car& self, Point next2, Point next3) {
     Point next = CurrentTile(xCoord, yCoord);
 
@@ -561,7 +606,7 @@ void ChangeCoordsToBonus(int& xCoord, int& yCoord, const World& world, const Car
 }
 
 
-void DifferentThingsWithLengthOfTheLine(const Car& self, const World& world, const Game& game, Move& move, int curr_index, vector<Point>& way, int xCoord, int yCoord) {
+void DifferentThingsWithLengthOfTheLine(const Car& self, const World& world, const Game& game, Move& move, int curr_index, vector<Point>& way, int& xCoord, int& yCoord) {
     if(lengthOfTheLine(curr_index, way) > 3 ) {
         if (self.getRemainingNitroTicks() == 0) {
                ChangeCoordsToBonus(xCoord, yCoord, world, self, way[(curr_index + 1) % way.size()], way[(curr_index + 2) % way.size()]);
@@ -579,33 +624,7 @@ void DifferentThingsWithLengthOfTheLine(const Car& self, const World& world, con
         //TODO: something about angle (should be close to pi*n/2)
         //move.setUseNitro(true);
         if(!((isLeftTurn(curr_index, way) and isRightTurn(curr_index + 1, way)) || (isRightTurn(curr_index, way) and isLeftTurn(curr_index + 1, way)))) {
-            //move.setBrake(true);
-
-        }
-    }
-}
-
-double MyStrategy::getWheelTurnW(double alpha, const Car& self, const Game& game){
-    double turn=0;
-    double turn_max = 1;
-    double turn_min = -1;
-    double dw_max = min(self.getWheelTurn() + 0.5, 1.0)*game.getCarAngularSpeedFactor() * pow((pow(self.getSpeedX(), 2) + pow(self.getSpeedY(), 2)), 0.5);
-    double dw_min = max(self.getWheelTurn() - 0.5, -1.0)*game.getCarAngularSpeedFactor() * pow((pow(self.getSpeedX(), 2) + pow(self.getSpeedY(), 2)), 0.5);
-    cout << "dw_min - " << dw_min << ", dw_max - " << dw_max << endl;
-    cout<<"alpha=="<<alpha<<endl;
-    //if (alpha == 0){ return 0; }
-    if ((alpha <= self.getAngularSpeed() + dw_max) && (alpha >= self.getAngularSpeed() + dw_min)){
-        cout << "return " << (alpha - self.getAngularSpeed() - dw_min) / (dw_max - dw_min) << endl;
-        return (alpha - self.getAngularSpeed() - dw_min) / (dw_max - dw_min);
-    }
-    else{
-        if (alpha > self.getAngularSpeed() + dw_max){
-            cout << "return " << 1 << endl;
-            return 1;//getWheelTurn(alpha-dw_max);
-        }
-        else{
-            cout << "return " << -1 << endl;
-            return -1;//getWheelTurn(-(alpha-dw_min));
+            move.setBrake(true);
         }
     }
 }
@@ -620,6 +639,163 @@ void SpillOil(const Car& self, const World& world, Move& move) {
             move.setSpillOil(true);
         }
     }
+}
+
+
+
+double getWheelTurn(double turn, const Game& game, double angle, double speed) {
+    if(angle < 0) {
+        double sumangle = 0;
+        for(double i = 0.0; i < turn; i += 0.05) {
+            sumangle += speed * game.getCarAngularSpeedFactor() * (turn - i);
+            //cout << "sumangle - " << sumangle << endl;
+        }
+        //cout << "sumangle - " << sumangle << endl;
+        if(sumangle > angle)
+            return turn;
+        cout << "Hi!" << endl;
+        return turn + 0.05;
+    }
+    else {
+        double sumangle = 0;
+        for(double i = 0.0; i > turn; i -= 0.05) {
+            sumangle += speed * game.getCarAngularSpeedFactor() * (turn + i);
+            //cout << "sumangle - " << sumangle << endl;
+        }
+        //cout << "sumangle - " << sumangle << endl;
+        if(sumangle < angle)
+            return turn;
+        cout << "Not Hi!" << endl;
+        return turn - 0.05;
+    }
+
+}
+
+double getWheelTurn(const Car& self, const Game& game, double angle) {
+    if(angle < 0) {
+            double sumangle = 0;
+            double turn = self.getWheelTurn();
+            for(double i = 0.0; i < turn; i += 0.05) {
+                sumangle += GetSpeed(self) * game.getCarAngularSpeedFactor() * (turn - i);
+                //cout << "sumangle - " << sumangle << endl;
+            }
+            cout << "sumangle - " << sumangle << endl;
+            if(sumangle > angle)
+                return -1;
+            cout << "Hi!" << endl;
+            return turn + 0.05;
+    }
+    else {
+            double turn = self.getWheelTurn();
+            double sumangle = 0;
+            for(double i = 0.0; i > turn; i -= 0.05) {
+                sumangle += GetSpeed(self) * game.getCarAngularSpeedFactor() * (turn + i);
+                //cout << "sumangle - " << sumangle << endl;
+            }
+            cout << "sumangle - " << sumangle << endl;
+            if(sumangle < angle)
+                return 1;
+            cout << "Not Hi!" << endl;
+            return turn - 0.05;
+    }
+}
+
+Point getNextPoint(Point cur, double speedX, double speedY) {
+    return Point(cur.x_ + speedX, cur.y_ + speedY);
+}
+
+int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int currentY, int desiredX, int desiredY, double desiredAngle, const Car& self, const Game& game, double max, double& dist) {
+    int ticks = 0;
+    double speedX = self.getSpeedX();
+    double speedY = self.getSpeedY();
+    while(abs(currentWheelTurn) < max) {
+        currentWheelTurn += angle > 0 ? 0.05 : -0.05;
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY);
+        new_point.Print();
+        currentX = new_point.x_;
+        currentY = new_point.y_;
+        double angle_add = GetSpeed(self) * game.getCarAngularSpeedFactor() * currentWheelTurn;
+        angle += angle_add;
+        speedX = GetSpeed(self) * cos(angle);
+        speedY = GetSpeed(self) * sin(angle);
+        ticks++;
+    }
+    while(getWheelTurn(currentWheelTurn, game, desiredAngle - angle, GetSpeed(self)) == currentWheelTurn) {
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY);
+        new_point.Print();
+        currentX = new_point.x_;
+        currentY = new_point.y_;
+        double angle_add = GetSpeed(self) * game.getCarAngularSpeedFactor() * currentWheelTurn;
+        angle += angle_add;
+        speedX = GetSpeed(self) * cos(angle);
+        speedY = GetSpeed(self) * sin(angle);
+        ticks++;
+        if(GetDistance(Point(currentX, currentY), Point(desiredX, desiredY)) > 3000){
+            dist = GetDistance(Point(currentX, currentY), Point(desiredX, desiredY));
+            return 10000;
+        }
+    }
+
+    while(abs(currentWheelTurn) > 0.05) {
+        currentWheelTurn -= currentWheelTurn > 0 ? 0.05 : -0.05;
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY);
+        new_point.Print();
+        currentX = new_point.x_;
+        currentY = new_point.y_;
+        double angle_add = GetSpeed(self) * game.getCarAngularSpeedFactor() * currentWheelTurn;
+        angle += angle_add;
+        speedX = GetSpeed(self) * cos(angle);
+        speedY = GetSpeed(self) * sin(angle);
+        ticks++;
+    }
+    dist = GetDistance(Point(currentX, currentY), Point(desiredX, desiredY));
+}
+
+void SetWheelTurnInSimpleTurn(const Car& self, const Game& game, Move& move, int curr_ind, vector<Point>& way, double angle) {
+    double myAngle = self.getAngle();
+    double desiredAngle =  0.0;
+    int currentX = self.getX();
+    int currentY = self.getY();
+    int desiredX = way[(curr_ind + 1) % way.size()].x_ * 800 + 400;
+    int desiredY = way[(curr_ind + 1) % way.size()].y_ * 800 + 400;
+    cout << "desired - " << desiredX << ", " << desiredY << endl;
+    double currentWheelTurn = self.getWheelTurn();
+    Direction  finaldir = GetDirection(way[curr_ind], way[(curr_ind + 1) % way.size()]);
+    if(finaldir == UP) {
+        desiredAngle = PI/2;
+    }
+    if(finaldir == DOWN) {
+        desiredAngle = -PI/2;
+    }
+    if(finaldir == LEFT) {
+        if(GetSomeDirection(self) == UP) {
+            desiredAngle = PI;
+        }
+        if(GetSomeDirection(self) == DOWN) {
+            desiredAngle = -PI;
+        }
+
+    }
+    if(finaldir == RIGHT) {
+        desiredAngle = 0.0;
+    }
+    double distance = 0;
+    int min_ticks = 1000000;
+    for(double i = 0.05; i <= 1.0; i += 0.05) {
+        int ticks = SetWheelSubroutine(currentWheelTurn, angle, currentX, currentY, desiredX, desiredY, desiredAngle, self, game, i, distance);
+        cout << "for i = " << i << ", distance found - " << distance << endl;
+        if(distance < 1080.0) {
+            if(ticks < min_ticks) {
+                min_ticks = ticks;
+                move.setWheelTurn(i);
+            }
+        }
+    }
+
+}
+
+bool inSimpleTurn(vector<Point>& way, int index) {
+    return isTurn(index, way) && !isTurn(index + 1, way) ;
 }
 
 void MyStrategy::move(const Car& self, const World& world, const Game& game, Move& move) {
@@ -696,10 +872,14 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
         angle = self.getAngleTo(xCoord, yCoord);
         if(!isStunned) {
             if(isgreater(engPower, 0.0)) {
-                if(needLeft(angle)) {
-                    move.setWheelTurn(-1.0);
+                if(inSimpleTurn(lostWay ? additional_way : way, lostWay ? additional_index : curr_index)) {
+                    SetWheelTurnInSimpleTurn(self, game, move, lostWay ? additional_index : curr_index, lostWay ? additional_way : way, self.getAngle());
                 } else {
-                    move.setWheelTurn(1.0);
+                    if(needLeft(angle)) {
+                        move.setWheelTurn(getWheelTurn(self, game, angle));
+                    } else {
+                        move.setWheelTurn(getWheelTurn(self, game, angle));
+                    }
                 }
 //                move.setWheelTurn(getWheelTurnW(angle, self, game));
 //                cout<<"w==" << self.getAngularSpeed()<<endl;
