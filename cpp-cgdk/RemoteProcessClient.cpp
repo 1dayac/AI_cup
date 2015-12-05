@@ -756,6 +756,7 @@ template <typename E> vector<E> RemoteProcessClient::readEnumArray() {
     vector<E> value;
     value.reserve(length);
 
+
     for (int i = 0; i < length; ++i) {
         value.push_back(readEnum<E>());
     }

@@ -70,6 +70,7 @@ public:
 	double getWheelTurnW(double alpha, const Car& self, const Game& game);
     void move(const model::Car& self, const model::World& world, const model::Game& game, model::Move& move);
     vector<Point> bestPath(const Car& self, const World& world, const Game& game);
+    void SetInitialCoords(int& x, int& y, const Car& self);
     EdgeBasedGraph graph;
 };
 
