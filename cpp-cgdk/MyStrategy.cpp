@@ -753,15 +753,30 @@ bool NearToCenterOfDoubleTurn(const Car& self, int index, vector<Point>& way) {
     return false;
 }
 
-
-Point getNextPoint(Point cur, double speedX, double speedY) {
+Point getNextPoint(Point cur, double speedX, double speedY, const Car& self) {
     return Point(cur.x_ + speedX, cur.y_ + speedY);
 }
 
+
+//Point getNextPoint(Point cur, double speedX, double speedY, const Car& self, const Game& game) {
+//
+//    auto carType = self.getType();
+//
+//    double accelerationFactor = self.getType() == BUGGY ? game.getBuggyEngineForwardPower() : game.getJeepEngineForwardPower();
+//    double accelerationX = accelerationFactor * self.getEnginePower() * sin(self.getAngle());
+//    double accelerationY = accelerationFactor * self.getEnginePower() * cos(self.getAngle());
+//    double speed = GetSpeed(self);
+//    double angSpeed = self.getAngularSpeed();
+////    double baseAngeularSpeed = game.getCarAngularSpeedFactor() * self.getWheelTurn() * ();
+//
+//    return Point(cur.x_ + speedX, cur.y_ + speedY);
+//}
+
 bool OutInTenTicks(const Car& self, const World& world, double angle, vector<Point>& way, int index, int n = 10) {
+
     Point cur(self.getX(), self.getY());
     for(int i = 0; i < n; ++i) {
-        Point next = getNextPoint(cur, self.getSpeedX(), self.getSpeedY());
+        Point next = getNextPoint(cur, self.getSpeedX(), self.getSpeedY(), self);
         cur = next;
     }
     if(CurrentTile(cur) == CurrentTile(self)) {
@@ -847,13 +862,18 @@ void SpillOil(const Car& self, const World& world, Move& move) {
 
 
 
-double getWheelTurn(double turn, const Game& game, double angle, double speed) {
+double getWheelTurn(double turn, const Game& game, double angle, double speedX, double speedY) {
+    double speed = speedX*speedX + speedY*speedY;
     if(angle < 0) {
         double sumangle = 0;
         for(double i = turn; i < 0; i += 0.05) {
-            sumangle += speed * game.getCarAngularSpeedFactor() * (i);
+            sumangle += (speedX * cos(angle + sumangle) + speedY * sin(angle + sumangle)) * game.getCarAngularSpeedFactor() * (i);
+            speedX = cos(angle + sumangle) * speed;
+            speedY = sin(angle + sumangle) * speed;
             //cout << "sumangle - " << sumangle << endl;
         }
+
+
         //cout << "sumangle - " << sumangle << endl;
         if(sumangle > angle)
             return turn;
@@ -863,7 +883,9 @@ double getWheelTurn(double turn, const Game& game, double angle, double speed) {
     else {
         double sumangle = 0;
         for(double i = turn; i > 0; i -= 0.05) {
-            sumangle += speed * game.getCarAngularSpeedFactor() * i;
+            sumangle += (speedX * cos(angle + sumangle) + speedY * sin(angle + sumangle)) * game.getCarAngularSpeedFactor() * (i);
+            speedX = cos(angle + sumangle) * speed;
+            speedY = sin(angle + sumangle) * speed;
             //cout << "sumangle - " << sumangle << endl;
         }
         //cout << "sumangle - " << sumangle << endl;
@@ -877,11 +899,17 @@ double getWheelTurn(double turn, const Game& game, double angle, double speed) {
 
 
 double getWheelTurn(const Car& self, const Game& game, double angle) {
+    double speed = GetSpeed(self);
+    double speedX = cos(speed);
+    double speedY = sin(speed);
+
     if(angle < 0) {
             double sumangle = 0;
             double turn = self.getWheelTurn();
             for(double i = turn; i < 0; i += 0.05) {
-                sumangle += GetSpeed(self) * game.getCarAngularSpeedFactor() * i;
+                sumangle += (speedX * cos(angle + sumangle) + speedY * sin(angle + sumangle)) * game.getCarAngularSpeedFactor() * (i);
+                speedX = cos(angle + sumangle) * speed;
+                speedY = sin(angle + sumangle) * speed;
           //      cout << "sumangle - " << sumangle << endl;
             }
             //cout << "sumangle - " << sumangle << endl;
@@ -894,7 +922,9 @@ double getWheelTurn(const Car& self, const Game& game, double angle) {
             double turn = self.getWheelTurn();
             double sumangle = 0;
             for(double i = turn; i > 0; i -= 0.05) {
-                sumangle += GetSpeed(self) * game.getCarAngularSpeedFactor() * i;
+                sumangle += (speedX * cos(angle + sumangle) + speedY * sin(angle + sumangle)) * game.getCarAngularSpeedFactor() * (i);
+                speedX = cos(angle + sumangle) * speed;
+                speedY = sin(angle + sumangle) * speed;
         //        cout << "sumangle - " << sumangle << endl;
             }
             //cout << "sumangle - " << sumangle << endl;
@@ -929,7 +959,7 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
             break;
         currentWheelTurn += angle > 0 ? 0.05 : -0.05;
         //cout << "Current whell turn - " << currentWheelTurn << endl;
-        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY);
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self);
         if(Intersects(new_point, myAngle, world)) {
             dist = 10000;
             return 10000;
@@ -937,7 +967,7 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
         //new_point.Print();
         currentX = new_point.x_;
         currentY = new_point.y_;
-        double angle_add = GetSpeed(self) * game.getCarAngularSpeedFactor() * currentWheelTurn;
+        double angle_add = (speedX * cos(myAngle) + speedY * sin(myAngle)) * game.getCarAngularSpeedFactor() * currentWheelTurn;
         //cout << "Add angle - " << angle_add<< endl;
 
         myAngle += angle_add;
@@ -956,8 +986,8 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
         ticks++;
     }
 
-    while(getWheelTurn(currentWheelTurn, game, GetAngle(myAngle, desiredAngle), GetSpeed(self)) == currentWheelTurn) {
-        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY);
+    while(getWheelTurn(currentWheelTurn, game, GetAngle(myAngle, desiredAngle), speedX, speedY) == currentWheelTurn) {
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self);
         if(Intersects(new_point, myAngle, world)) {
             //cout << "Inside ";
             //new_point.Print();
@@ -968,7 +998,7 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
         //new_point.Print();
         currentX = new_point.x_;
         currentY = new_point.y_;
-        double angle_add = GetSpeed(self) * game.getCarAngularSpeedFactor() * currentWheelTurn;
+        double angle_add = (speedX * cos(myAngle) + speedY * sin(myAngle)) * game.getCarAngularSpeedFactor() * currentWheelTurn;
        // cout << "Add angle - " << angle_add<< endl;
 
         myAngle += angle_add;
@@ -992,7 +1022,7 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
 
     while(abs(currentWheelTurn) > 0.05) {
         currentWheelTurn -= currentWheelTurn > 0 ? 0.05 : -0.05;
-        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY);
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self);
         if(Intersects(new_point, myAngle, world)) {
             dist = 1000000;
             return 10000;
@@ -1001,7 +1031,7 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
         //new_point.Print();
         currentX = new_point.x_;
         currentY = new_point.y_;
-        double angle_add = GetSpeed(self) * game.getCarAngularSpeedFactor() * currentWheelTurn;
+        double angle_add = (speedX * cos(myAngle) + speedY * sin(myAngle)) * game.getCarAngularSpeedFactor() * currentWheelTurn;
        // cout << "Add angle - " << angle_add<< endl;
 
         myAngle += angle_add;
@@ -1169,7 +1199,6 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
         additional_way.push_back(way[(curr_index + 3) % way.size()]);
         additional_index++;
     }
-
     int xCoord = lostWay ? additional_way[additional_index].x_ * 800 + 0.5 * game.getTrackTileSize() : way[curr_index].x_ * 800 + 0.5 * game.getTrackTileSize();
     int yCoord = lostWay ? additional_way[additional_index].y_ * 800 + 0.5 * game.getTrackTileSize() : way[curr_index].y_ * 800 + 0.5 * game.getTrackTileSize();
     //if(!isTurn(lostWay ? additional_index : curr_index, lostWay ? additional_way : way))

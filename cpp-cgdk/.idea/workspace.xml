@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/MyStrategy.cpp" line="927" />
+    <bookmark url="file://$PROJECT_DIR$/MyStrategy.cpp" line="957" />
   </component>
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" assignedExecutableTargets="true" buildAllGenerated="true">
     <generated>
@@ -37,8 +37,8 @@
       <file leaf-file-name="MyStrategy.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/MyStrategy.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.6934931">
-              <caret line="1270" column="13" selection-start-line="1270" selection-start-column="13" selection-end-line="1270" selection-end-column="13" />
+            <state vertical-scroll-proportion="0.30650684">
+              <caret line="910" column="48" selection-start-line="910" selection-start-column="48" selection-end-line="910" selection-end-column="48" />
               <folding>
                 <element signature="e#5896#5905#0" expanded="true" />
               </folding>
@@ -291,7 +291,7 @@
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.329653" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33368093" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33368093" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -329,8 +329,23 @@
           <line>603</line>
           <option name="timeStamp" value="694" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/MyStrategy.cpp</url>
+          <line>870</line>
+          <option name="timeStamp" value="704" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/MyStrategy.cpp</url>
+          <line>887</line>
+          <option name="timeStamp" value="705" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/MyStrategy.cpp</url>
+          <line>910</line>
+          <option name="timeStamp" value="706" />
+        </line-breakpoint>
       </breakpoints>
-      <option name="time" value="704" />
+      <option name="time" value="707" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -506,8 +521,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/MyStrategy.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6934931">
-          <caret line="1270" column="13" selection-start-line="1270" selection-start-column="13" selection-end-line="1270" selection-end-column="13" />
+        <state vertical-scroll-proportion="0.30650684">
+          <caret line="910" column="48" selection-start-line="910" selection-start-column="48" selection-end-line="910" selection-end-column="48" />
           <folding>
             <element signature="e#5896#5905#0" expanded="true" />
           </folding>
