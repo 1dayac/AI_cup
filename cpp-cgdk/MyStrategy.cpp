@@ -95,7 +95,7 @@ EdgeBasedGraph ConvertToEdgeBasedGraph(vector<vector<TileType>>& my_world) {
         for(auto e2 : edge_graph_vertices) {
             if(Adjacent(e, e2)) {
                 if(IsTurn(e, e2)) {
-                    edge_graph_edges[make_pair(e,e2)] = 3;
+                    edge_graph_edges[make_pair(e,e2)] = 1.95;
                 }
 
                 if(IsStraightLine(e, e2)) {
@@ -336,7 +336,36 @@ Direction GetDirection(Point from, Point to) {
     return UP;
 }
 
+Point GetPointAfterRotation(Point center, Point p, double angle) {
+    return Point((p.x_ - center.x_) * cos(angle) -  (p.y_ - center.y_) * sin(angle) + center.x_, (p.x_ - center.x_) * sin(angle) +  (p.y_ - center.y_) * cos(angle) + center.y_);
+}
 
+
+pair<double, double> GetPointAfterRotation(double x, double y, double angle) {
+    return make_pair(x * cos(angle) -  y * sin(angle), x * sin(angle) +  y * cos(angle));
+}
+
+bool Intersects(Point p, double angle, const World& world) {
+    Point p1 = GetPointAfterRotation(p, Point(p.x_ + 105, p.y_ + 70), angle);
+    Point p2 = GetPointAfterRotation(p, Point(p.x_ + 105, p.y_ - 70), angle);
+    Point p3 = GetPointAfterRotation(p, Point(p.x_ - 105, p.y_ + 70), angle);
+    Point p4 = GetPointAfterRotation(p, Point(p.x_ - 105, p.y_ - 70), angle);
+    Point p5 = GetPointAfterRotation(p, Point(p.x_, p.y_ + 70), angle);
+    Point p6 = GetPointAfterRotation(p, Point(p.x_, p.y_ - 70), angle);
+    //p1.Print();
+    //p2.Print();
+    //p3.Print();
+    return Inside(p1, world.getTilesXY()[p1.x_ / 800][p1.y_ / 800], 0, 0) || Inside(p2, world.getTilesXY()[p2.x_ / 800][p2.y_ / 800], 0, 0) || Inside(p3, world.getTilesXY()[p3.x_ / 800][p3.y_ / 800], 0, 0) || Inside(p4, world.getTilesXY()[p4.x_/ 800][p4.y_/ 800], 0, 0)
+           || Inside(p5, world.getTilesXY()[p5.x_/ 800][p5.y_/ 800], 0, 0) || Inside(p6, world.getTilesXY()[p6.x_/ 800][p6.y_/ 800], 0, 0);
+}
+
+bool Intersects(Point p, const World& world) {
+    return Inside(p, world.getTilesXY()[p.x_ / 800][p.y_ / 800], 0, 0);
+}
+
+bool Intersects(const Car& self,  const World& world) {
+    return Intersects(Point(self.getX(), self.getY()), self.getAngle(), world);
+}
 vector<Point> MyStrategy::bestPath(const Car& self, const World& world, const Game& game) {
 
 
@@ -603,20 +632,20 @@ void SetCoords(int& xCoord, int& yCoord, vector<Point>& way, int curr_index, Mov
     if(isLeftTurn((curr_index + l - 1) % way.size(), way) and isLeftTurn((curr_index + l - 2) % way.size(), way)) {
         Direction d = GetDirection(way[curr_index], way[(curr_index + 1) % way.size()]);
         if(d == UP) {
-            if(xCoord % 800 > 400)
-                xCoord += 100;
+            if(xCoord % 800 < 400)
+                xCoord += 150;
         }
         if(d == DOWN) {
-            if(xCoord % 800 < 400)
-                xCoord -= 100;
+            if(xCoord % 800 > 400)
+                xCoord -= 150;
         }
         if(d == LEFT) {
             if(yCoord % 800 > 400)
-                yCoord -= 100;
+                yCoord -= 150;
         }
         if(d == RIGHT) {
             if(yCoord % 800 < 400)
-                yCoord += 100;
+                yCoord += 150;
         }
 
         return;
@@ -625,20 +654,20 @@ void SetCoords(int& xCoord, int& yCoord, vector<Point>& way, int curr_index, Mov
     if(isRightTurn((curr_index + l - 1) % way.size(), way) and isRightTurn((curr_index + l - 2) % way.size(), way)) {
         Direction d = GetDirection(way[curr_index], way[(curr_index + 1) % way.size()]);
         if(d == UP) {
-            if(xCoord % 800 < 400)
-                xCoord -= 100;
+            if(xCoord % 800 > 400)
+                xCoord -= 110;
         }
         if(d == DOWN) {
-            if(xCoord % 800 > 400)
-                xCoord += 100;
+            if(xCoord % 800 < 400)
+                xCoord += 110;
         }
         if(d == LEFT) {
             if(yCoord % 800 < 400)
-            yCoord += 100;
+            yCoord += 110;
         }
         if(d == RIGHT) {
             if(yCoord % 800 > 400)
-            yCoord -= 100;
+            yCoord -= 110;
         }
 
         return;
@@ -663,9 +692,20 @@ void FireInTheHole(const Car& self, const World& world, Move& move) {
         double angle = self.getAngle();
         double xProjectSpeed = projectileSpeed * cos(angle);
         double yProjectSpeed = projectileSpeed * sin(angle);
-        for(int time = 0; time < 50; ++time) {
-            if(abs((xCoord + (double)time * xSpeed) - (self.getX() + (double)time * xProjectSpeed)) < 70.0 and abs((yCoord + (double)time * ySpeed) - (self.getY() + (double)time * yProjectSpeed)) < 70.0 ) {
-                move.setThrowProjectile(true);
+        if(self.getType() == BUGGY) {
+            for(int time = 0; time < 50; ++time) {
+                if(abs((xCoord + (double)time * xSpeed) - (self.getX() + (double)time * xProjectSpeed)) < 70.0 and abs((yCoord + (double)time * ySpeed) - (self.getY() + (double)time * yProjectSpeed)) < 70.0 ) {
+                    move.setThrowProjectile(true);
+                }
+            }
+        } else {
+            for(int time = 0; time < 50; ++time) {
+                if(Intersects(Point(self.getX() + (double)time * xProjectSpeed, self.getY() + (double)time * yProjectSpeed), world)) {
+                    break;
+                }
+                if(abs((xCoord + (double)time * xSpeed) - (self.getX() + (double)time * xProjectSpeed)) < 70.0 and abs((yCoord + (double)time * ySpeed) - (self.getY() + (double)time * yProjectSpeed)) < 70.0 ) {
+                    move.setThrowProjectile(true);
+                }
             }
         }
 
@@ -692,32 +732,14 @@ void ChangeCoordsToBonus(int& xCoord, int& yCoord, const World& world, const Car
     }
 }
 
-Point GetPointAfterRotation(Point center, Point p, double angle) {
-    return Point((p.x_ - center.x_) * cos(angle) -  (p.y_ - center.y_) * sin(angle) + center.x_, (p.x_ - center.x_) * sin(angle) +  (p.y_ - center.y_) * cos(angle) + center.y_);
-}
+
 
 bool InsideDoubleTurn(int index, vector<Point>& way) {
     return (isLeftTurn(index - 1, way) and isLeftTurn(index, way)) || (isRightTurn(index - 1, way) and isRightTurn(index, way)) ||
            (isLeftTurn(index - 2, way) and isLeftTurn(index - 1, way)) || (isRightTurn(index - 2, way) and isRightTurn(index - 1, way)) ;
 }
 
-bool Intersects(Point p, double angle, const World& world) {
-    Point p1 = GetPointAfterRotation(p, Point(p.x_ + 105, p.y_ + 70), angle);
-    Point p2 = GetPointAfterRotation(p, Point(p.x_ + 105, p.y_ - 70), angle);
-    Point p3 = GetPointAfterRotation(p, Point(p.x_ - 105, p.y_ + 70), angle);
-    Point p4 = GetPointAfterRotation(p, Point(p.x_ - 105, p.y_ - 70), angle);
-    Point p5 = GetPointAfterRotation(p, Point(p.x_, p.y_ + 70), angle);
-    Point p6 = GetPointAfterRotation(p, Point(p.x_, p.y_ - 70), angle);
-    //p1.Print();
-    //p2.Print();
-    //p3.Print();
-    return Inside(p1, world.getTilesXY()[p1.x_ / 800][p1.y_ / 800], 0, 0) || Inside(p2, world.getTilesXY()[p2.x_ / 800][p2.y_ / 800], 0, 0) || Inside(p3, world.getTilesXY()[p3.x_ / 800][p3.y_ / 800], 0, 0) || Inside(p4, world.getTilesXY()[p4.x_/ 800][p4.y_/ 800], 0, 0)
-           || Inside(p5, world.getTilesXY()[p5.x_/ 800][p5.y_/ 800], 0, 0) || Inside(p6, world.getTilesXY()[p6.x_/ 800][p6.y_/ 800], 0, 0);
- }
 
-bool Intersects(const Car& self,  const World& world) {
-    return Intersects(Point(self.getX(), self.getY()), self.getAngle(), world);
-}
 
 bool NearToCenterOfDoubleTurn(const Car& self, int index, vector<Point>& way) {
     int start_of_turn = 0;
@@ -757,20 +779,48 @@ Point getNextPoint(Point cur, double speedX, double speedY, const Car& self) {
     return Point(cur.x_ + speedX, cur.y_ + speedY);
 }
 
+inline double limit(double val, double lim)
+{
+    return max(-lim, min(lim, val));
+}
 
-//Point getNextPoint(Point cur, double speedX, double speedY, const Car& self, const Game& game) {
-//
-//    auto carType = self.getType();
-//
-//    double accelerationFactor = self.getType() == BUGGY ? game.getBuggyEngineForwardPower() : game.getJeepEngineForwardPower();
-//    double accelerationX = accelerationFactor * self.getEnginePower() * sin(self.getAngle());
-//    double accelerationY = accelerationFactor * self.getEnginePower() * cos(self.getAngle());
-//    double speed = GetSpeed(self);
-//    double angSpeed = self.getAngularSpeed();
-////    double baseAngeularSpeed = game.getCarAngularSpeedFactor() * self.getWheelTurn() * ();
-//
-//    return Point(cur.x_ + speedX, cur.y_ + speedY);
-//}
+Point getNextPoint(Point cur, double speedX, double speedY, const Car& self, const Game& game, double angle) {
+
+    auto carType = self.getType();
+    double updateFactor = 0.1;
+    double accelerationFactor = self.getType() == BUGGY ? game.getBuggyEngineForwardPower() : game.getJeepEngineForwardPower();
+    accelerationFactor /= self.getMass();
+    double accelerationX = accelerationFactor * self.getEnginePower() * cos(self.getAngle());
+    double accelerationY = accelerationFactor * self.getEnginePower() * sin(self.getAngle());
+    double speed = GetSpeed(self);
+    double angSpeed = self.getAngularSpeed();
+    double baseAngeularSpeed = game.getCarAngularSpeedFactor() * self.getWheelTurn() * (speedX * cos(angle) + speedY * sin(angle));
+
+    double lenghtwiseVelocityChange = game.getCarLengthwiseMovementFrictionFactor() * updateFactor;
+    double crosswiseVelocityChange = game.getCarCrosswiseMovementFrictionFactor() * updateFactor;
+
+
+    double frictMult = pow(1 - game.getCarRotationAirFrictionFactor(), 0.1);
+
+    double newX = cur.x_;
+    double newY = cur.y_;
+
+
+    for(int i = 0; i < 10; ++i) {
+          newX += speedX*updateFactor;
+          newY += speedY*updateFactor;
+              speedX += accelerationX;
+              speedY += accelerationY;
+              speedX *= game.getCarMovementAirFrictionFactor();
+              speedY *= game.getCarMovementAirFrictionFactor();
+              double temp = speedX*cos(angle) + speedY*sin(angle);
+              speedX -= limit(speedX * cos(angle), lenghtwiseVelocityChange) * speedX + limit(temp, crosswiseVelocityChange)*GetPointAfterRotation(cos(angle), sin(angle), PI/2).first;
+              speedY -= limit(speedY * sin(angle), lenghtwiseVelocityChange) * speedY + limit(temp, crosswiseVelocityChange)*GetPointAfterRotation(cos(angle), sin(angle), PI/2).second;
+              angle += angSpeed*0.1;
+              angSpeed = baseAngeularSpeed + (angSpeed - baseAngeularSpeed) * frictMult;
+    }
+    return Point(newX, newY);
+}
 
 bool OutInTenTicks(const Car& self, const World& world, double angle, vector<Point>& way, int index, int n = 10) {
 
@@ -829,7 +879,7 @@ void DifferentThingsWithLengthOfTheLine(const Car& self, const World& world, con
     }
 
     if(InsideDoubleTurn(curr_index, way)) {
-        if(GetSpeed(self) > 5 && abs(self.getWheelTurn()) > 0.9) {
+        if(GetSpeed(self) > 10 && abs(self.getWheelTurn()) > 0.9) {
             if(NearToCenterOfDoubleTurn(self, curr_index, way)) {
                 move.setBrake(true);
             }
@@ -959,7 +1009,7 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
             break;
         currentWheelTurn += angle > 0 ? 0.05 : -0.05;
         //cout << "Current whell turn - " << currentWheelTurn << endl;
-        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self);
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self, game, myAngle);
         if(Intersects(new_point, myAngle, world)) {
             dist = 10000;
             return 10000;
@@ -987,7 +1037,7 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
     }
 
     while(getWheelTurn(currentWheelTurn, game, GetAngle(myAngle, desiredAngle), speedX, speedY) == currentWheelTurn) {
-        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self);
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self, game, myAngle);
         if(Intersects(new_point, myAngle, world)) {
             //cout << "Inside ";
             //new_point.Print();
@@ -1022,7 +1072,7 @@ int SetWheelSubroutine(double currentWheelTurn, double angle, int currentX, int 
 
     while(abs(currentWheelTurn) > 0.05) {
         currentWheelTurn -= currentWheelTurn > 0 ? 0.05 : -0.05;
-        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self);
+        Point new_point = getNextPoint(Point(currentX, currentY), speedX, speedY, self, game, myAngle);
         if(Intersects(new_point, myAngle, world)) {
             dist = 1000000;
             return 10000;
@@ -1253,9 +1303,7 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
                     move.setWheelTurn(-1.0);
                 }
             }
-            if(std::abs(angle) < 0.01) {
-                move.setWheelTurn(0.0);
-            }
+
 
             if(abs(self.getAngularSpeed()) > 0.02 && GetSpeed(self) > 15.0 && !set && lengthOfTheLine(lostWay ? additional_index - 1 : curr_index - 1, lostWay ? additional_way : way) <= 2) {
                     move.setBrake(true);
