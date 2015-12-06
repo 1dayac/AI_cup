@@ -1312,6 +1312,9 @@ void MyStrategy::move(const Car& self, const World& world, const Game& game, Mov
             if(std::abs(angle) > 1.0 && GetSpeed(self) > 8) {
 //                move.setBrake(true);
             }
+            if(set) {
+                move.setBrake(false);
+            }
         } else {
             if(isless(engPower, 0.0)) {
                 if(needLeft(angle)) {
